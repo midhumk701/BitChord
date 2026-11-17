@@ -24,7 +24,7 @@ jobs:
           log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@v4
       - name: Install Android build tools
-        run: sdkmanager 'platforms;android-37' 'build-tools;36.0.0' 'cmake;3.22.1'
+        run: sdkmanager 'platforms;android-37.0' 'build-tools;36.0.0' 'cmake;3.22.1'
       - name: Run unit tests and build preview
         run: bash ./gradlew :app:testDevDebugUnitTest :app:assembleDevDebug -Pbitchord.bundleWear=false --stacktrace
       - name: Upload installable test APKs

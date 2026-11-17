@@ -1409,7 +1409,7 @@ fun NowPlayingScreen(
     // still-art full-bleed preference. Other providers and static artwork keep
     // answering to that preference exactly as before.
     // A music video sits in the card's place at its own 16:9, never full bleed.
-    val heroMode = !videoMode && (
+    val heroMode = !rumiVinylMode && !videoMode && (
         spotifyCanvasOnPhone ||
             (fullBleedArt && playerFillsWindow(windowWidth))
         )
@@ -1457,7 +1457,7 @@ fun NowPlayingScreen(
     // composition pass, so the still art is whole again in the very frame the
     // clip goes, rather than a frame later with no artwork anywhere.
     val heroClip = canvas?.takeIf { heroMode && !collapsePastHalf }
-    val spotifyCanvasFullscreen = spotifyCanvasOnPhone &&
+    val spotifyCanvasFullscreen = !rumiVinylMode && spotifyCanvasOnPhone &&
         heroClip?.source == CanvasSource.SPOTIFY
     val spotifyCanvasPresentation = spotifyCanvasFullscreen && canvasRendered
     // The clip's player, which outlives [heroClip] by the second half of a
@@ -3070,7 +3070,8 @@ fun NowPlayingScreen(
                         // card. Zero until there is a banner to be, which is to say
                         // until [heroHeight] and the player's width have been measured.
                         fun bannerShare(): Float =
-                            if (heroHeight > 0.dp && playerBounds.width > 0) heroT.value else 0f
+                            // Vinyl must never inherit Classic's latched or animating banner geometry.
+                            if (!rumiVinylMode && heroHeight > 0.dp && playerBounds.width > 0) heroT.value else 0f
                         // How much of the banner is on screen: its share, given up as
                         // the sleeve collapses — the same movement as the collapse
                         // rather than a fade chained after it.
@@ -3455,7 +3456,7 @@ fun NowPlayingScreen(
                             // Where the clip plays when it can't have the banner:
                             // inside the same clip as the still art, taking the
                             // sleeve's corners, shadow and paused shrink for free.
-                            if (!heroMode && canvas != null) {
+                            if (!rumiVinylMode && !heroMode && canvas != null) {
                                 WhileShown({ !collapsePastHalf }) {
                                     val stillStart = remember(canvas.url) { stillAtMount() }
                                     CanvasArtworkPlayer(

@@ -1,5 +1,8 @@
 package com.music.bitchord.ui.screens
 
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -1713,5 +1716,79 @@ private fun String?.croppedAt(width: Int, height: Int = width): String? {
         replace(GOOGLE_SIZE_SUFFIX, "=w$width-h$height-p-l90-rj")
     } else {
         artworkAt(maxOf(width, height))
+    }
+}
+
+
+/** Featured recommendations use the same navigation and queue actions as the feed. */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+internal fun RumiFeaturedShelf(
+    picks: List<TopPick>,
+    listenerName: String?,
+    onClick: (TopPick, String) -> Unit,
+    onLongPress: ((TopPick) -> Unit)?,
+) {
+    if (picks.isEmpty()) return
+    val featured = picks.take(6)
+    val pager = rememberPagerState(pageCount = { featured.size })
+    Column(Modifier.padding(bottom = 24.dp)) {
+        HorizontalPager(
+            state = pager,
+            contentPadding = PaddingValues(horizontal = PAGE_GUTTER),
+            pageSpacing = 12.dp,
+            modifier = Modifier.fillMaxWidth(),
+        ) { page ->
+            val pick = featured[page]
+            val text = cardText(pick, listenerName)
+            Box(
+                Modifier.fillMaxWidth().height(300.dp)
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(Color(0xFF30213F))
+                    .longPressMenuClickable(
+                        onClick = { onClick(pick, text.title) },
+                        onLongClick = onLongPress?.takeIf { pick.kind == TopPickKind.LATEST_RELEASE }
+                            ?.let { action -> { action(pick) } },
+                    ),
+            ) {
+                if (LocalArtworkImages.current) {
+                    AsyncImage(
+                        model = pick.images.firstOrNull()?.artworkAt(HEADER_ART_PX),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+                Box(Modifier.fillMaxSize().background(Brush.verticalGradient(
+                    listOf(Color.Black.copy(alpha = 0.08f), Color(0xFF180E24).copy(alpha = 0.96f)),
+                )))
+                Column(Modifier.align(Alignment.BottomStart).padding(24.dp)) {
+                    Text(text.eyebrow, color = Color(0xFFE0C4FF),
+                        style = MaterialTheme.typography.labelLarge, maxLines = 1,
+                        overflow = TextOverflow.Ellipsis)
+                    Spacer(Modifier.height(8.dp))
+                    Text(text.title, color = Color.White,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    if (text.subtitle.isNotBlank()) {
+                        Spacer(Modifier.height(6.dp))
+                        Text(text.subtitle, color = Color.White.copy(alpha = 0.8f),
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                }
+            }
+        }
+        if (featured.size > 1) {
+            Row(Modifier.fillMaxWidth().padding(top = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)) {
+                repeat(featured.size) { index ->
+                    Box(Modifier.size(width = if (pager.currentPage == index) 20.dp else 6.dp,
+                        height = 6.dp).clip(CircleShape).background(
+                        if (pager.currentPage == index) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)))
+                }
+            }
+        }
     }
 }

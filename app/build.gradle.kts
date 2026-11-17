@@ -75,7 +75,7 @@ android {
 
     defaultConfig {
         applicationId = "io.github.midhumk701.rumi"
-        resValue("string", "rumi_app_name", "Rumi")
+        resValue("string", "rumi_app_name", "Rumi Music")
         // 26 keeps reach wide; real-time blur (RenderEffect) kicks in on API 31+,
         // Haze falls back to a translucent scrim below that.
         minSdk = 26
@@ -134,8 +134,8 @@ android {
         create("dev") {
             dimension = "env"
             applicationId = "io.github.midhumk701.rumi.dev"
-            resValue("string", "app_name", "Rumi Dev")
-            resValue("string", "rumi_app_name", "Rumi Dev")
+            resValue("string", "app_name", "Rumi Music")
+            resValue("string", "rumi_app_name", "Rumi Music")
         }
         create("prod") {
             dimension = "env"

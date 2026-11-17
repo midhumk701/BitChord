@@ -206,7 +206,7 @@ fun HomeScreen(
             if (onTopPickClick != null) {
                 when {
                     !topPicks.isNullOrEmpty() -> item(key = "top-picks") {
-                        TopPicksShelf(
+                        RumiFeaturedShelf(
                             picks = topPicks,
                             listenerName = listenerName,
                             onClick = onTopPickClick,
@@ -473,9 +473,7 @@ private fun HomeTitle(
         modifier = modifier
             .padding(horizontal = PAGE_GUTTER, vertical = 8.dp)
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(Color(0xFF21182E))
-            .padding(horizontal = 20.dp, vertical = 20.dp),
+            .padding(vertical = 12.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -488,13 +486,13 @@ private fun HomeTitle(
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(32.dp),
             )
-            Text("Rumi", style = MaterialTheme.typography.titleLarge,
+            Text("Rumi Music", style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onBackground)
         }
         Text(
             text = title,
-            style = MaterialTheme.typography.displayLarge,
-            color = Color(0xFFF3E9FF),
+            style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.onBackground,
         )
         Spacer(Modifier.height(8.dp))
         Text(

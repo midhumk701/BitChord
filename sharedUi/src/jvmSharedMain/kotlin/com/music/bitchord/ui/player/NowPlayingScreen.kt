@@ -31,6 +31,9 @@ import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -40,6 +43,7 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.verticalDrag
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -871,6 +875,8 @@ fun NowPlayingScreen(
 ) {
     val density = LocalDensity.current
     val haptics = rememberHaptics()
+    // Rumi starts with a vinyl sleeve. Long-press the artwork to return to Classic.
+    var rumiVinylMode by remember { mutableStateOf(true) }
 
     // Remote tracks whose art lives inside the file resolve it here, once —
     // every surface below reads the same value rather than each triggering
@@ -3375,6 +3381,19 @@ fun NowPlayingScreen(
                                     )
                                 }
                             }
+                            if (rumiVinylMode) {
+                                RumiVinylArtwork(
+                                    artRequest = art.request,
+                                    isPlaying = isPlaying,
+                                    modifier = Modifier.fillMaxSize(),
+                                    onLongPress = { rumiVinylMode = false },
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier.fillMaxSize().pointerInput(Unit) {
+                                        detectTapGestures(onLongPress = { rumiVinylMode = true })
+                                    },
+                                ) {
                             AsyncImage(
                                 // Decode at the sleeve's *expanded* size, always.
                                 // Coil otherwise sizes the decode to however large
@@ -3428,6 +3447,10 @@ fun NowPlayingScreen(
                                     },
                             )
 
+                                }
+                            }
+
+                            
                             // Where the clip plays when it can't have the banner:
                             // inside the same clip as the still art, taking the
                             // sleeve's corners, shadow and paused shrink for free.
@@ -4245,4 +4268,64 @@ private suspend fun AwaitPointerEventScope.dragQueueIn(
     }
     onHold(false)
     onSettle(open)
+}
+
+
+/**
+ * Rumi's turntable sleeve. This is artwork-only: playback, queue, seeking and
+ * every transport action remain owned by the original BitChord player.
+ */
+@Composable
+private fun RumiVinylArtwork(
+    artRequest: Any?,
+    isPlaying: Boolean,
+    modifier: Modifier = Modifier,
+    onLongPress: () -> Unit,
+) {
+    val rotation = remember { Animatable(0f) }
+    LaunchedEffect(isPlaying) {
+        if (isPlaying) {
+            while (true) {
+                rotation.animateTo(
+                    rotation.value + 360f,
+                    animationSpec = tween(durationMillis = 18000, easing = LinearEasing),
+                )
+            }
+        }
+    }
+    Box(
+        modifier = modifier.pointerInput(onLongPress) {
+            detectTapGestures(onLongPress = { onLongPress() })
+        },
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.88f)
+                .aspectRatio(1f)
+                .graphicsLayer { rotationZ = rotation.value },
+            contentAlignment = Alignment.Center,
+        ) {
+            Canvas(Modifier.fillMaxSize()) {
+                drawCircle(Color(0xFF101017))
+                for (i in 1..12) {
+                    drawCircle(
+                        color = Color(0xFF37313E).copy(alpha = if (i % 2 == 0) 0.55f else 0.25f),
+                        radius = size.minDimension * (0.26f + i * 0.018f),
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.dp.toPx()),
+                    )
+                }
+                drawCircle(Color(0xFFB99BE7), radius = size.minDimension * 0.255f)
+            }
+            AsyncImage(
+                model = artRequest,
+                contentDescription = "Album artwork on Rumi vinyl record",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth(0.49f)
+                    .aspectRatio(1f)
+                    .clip(CircleShape),
+            )
+        }
+    }
 }

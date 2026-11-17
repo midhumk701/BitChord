@@ -469,7 +469,14 @@ private fun HomeTitle(
     onFestiveLogoClick: (() -> Unit)? = null,
 ) {
     // Rumi branding, modified 2026-11-17. Keep the existing feed and its actions.
-    Column(modifier = modifier.padding(horizontal = PAGE_GUTTER, vertical = 8.dp)) {
+    Column(
+        modifier = modifier
+            .padding(horizontal = PAGE_GUTTER, vertical = 8.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(Color(0xFF21182E))
+            .padding(horizontal = 20.dp, vertical = 20.dp),
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),

@@ -3847,7 +3847,7 @@ fun NowPlayingScreen(
                                     showRevertCue -> onOpenMenu
                                     lyricsShareGlyphVisible && lyricPicker.picking -> lyricPicker.cancel
                                     lyricsShareGlyphVisible -> lyricPicker.beginPicking
-                                    else -> { { rumiPlayerMenuOpen = true } }
+                                    else -> { rumiPlayerMenuOpen = true }
                                 },
                                 haptic = if (lyricsShareGlyphVisible && !showRevertCue) {
                                     Haptic.Select
@@ -4322,8 +4322,7 @@ private fun RumiVinylArtwork(
     artRequest: Any?,
     isPlaying: Boolean,
     modifier: Modifier = Modifier,
-    onLongPress: () -> Unit,
-) {
+ ) {
     var rotationEnabled by remember { mutableStateOf(true) }
     var fortyFiveRpm by remember { mutableStateOf(false) }
     val rotation = remember { Animatable(0f) }
@@ -4341,9 +4340,7 @@ private fun RumiVinylArtwork(
         }
     }
     Box(
-        modifier = modifier.pointerInput(onLongPress) {
-            detectTapGestures(onLongPress = { onLongPress() })
-        },
+        modifier = modifier,
         contentAlignment = Alignment.Center,
     ) {
         Box(

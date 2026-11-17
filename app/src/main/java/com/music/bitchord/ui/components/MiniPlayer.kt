@@ -393,7 +393,7 @@ fun MiniPlayer(
             .clip(shape)
             .then(
                 if (reduceDynamicBlur) {
-                    Modifier.background(MaterialTheme.colorScheme.surface)
+                    Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.96f))
                 } else {
                     Modifier.optimizedHazeEffect(
                         state = hazeState,
@@ -401,7 +401,7 @@ fun MiniPlayer(
                     )
                 },
             )
-            .border(0.5.dp, Color.White.copy(alpha = 0.10f), shape)
+            .border(1.dp, Color(0xFFC6A6F4).copy(alpha = 0.36f), shape)
             // Deliberately silent: the whole bar is the target, so it catches
             // stray taps meant for the page behind it, and the sheet rising is
             // its own confirmation. The glyphs on it still buzz.

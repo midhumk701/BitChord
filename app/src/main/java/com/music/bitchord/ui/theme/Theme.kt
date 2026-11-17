@@ -24,19 +24,19 @@ import com.music.bitchord.data.settings.AppFont
 val AccentRed = Color(0xFFFA2D48)
 
 private val DarkColors = darkColorScheme(
-    primary = Color.White,
-    onPrimary = Color.Black,
-    background = Color.Black,
+    primary = Color(0xFFC7A4F5),
+    onPrimary = Color(0xFF20152E),
+    background = Color(0xFF100F18),
     onBackground = Color.White,
-    surface = Color(0xFF0D0D0F),
+    surface = Color(0xFF191623),
     onSurface = Color.White,
-    surfaceVariant = Color(0xFF1C1C1E),
-    onSurfaceVariant = Color(0xFF8E8E93),
-    outline = Color(0xFF2C2C2E),
+    surfaceVariant = Color(0xFF282237),
+    onSurfaceVariant = Color(0xFFB9AEC9),
+    outline = Color(0xFF493B5C),
 )
 
 private val LightColors = lightColorScheme(
-    primary = Color.Black,
+    primary = Color(0xFF6A408C),
     onPrimary = Color.White,
     background = Color.White,
     onBackground = Color.Black,
@@ -91,7 +91,7 @@ private val BitChordTypography = Typography(
     bodyMedium = TextStyle(fontWeight = FontWeight.W400, fontSize = 14.sp, letterSpacing = 0.3.sp),
     labelMedium = TextStyle(fontWeight = FontWeight.W600, fontSize = 12.sp, letterSpacing = 0.25.sp),
     labelSmall = TextStyle(fontWeight = FontWeight.W600, fontSize = 11.sp, letterSpacing = 0.3.sp),
-).withFamily(SFProDisplay)
+).withFamily(FontFamily.SansSerif)
 
 /**
  * SF Pro Display as the app first shipped it, before [SFProDisplay] moved every

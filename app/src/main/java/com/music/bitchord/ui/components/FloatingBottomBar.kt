@@ -284,7 +284,7 @@ fun FloatingBottomBar(
                         scaleY = 1f - lag * STRETCH * SQUASH
                     }
                     .clip(pillShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)),
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.24f)),
             )
         }
 

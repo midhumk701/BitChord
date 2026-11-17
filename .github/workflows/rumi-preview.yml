@@ -1,0 +1,40 @@
+name: Rumi preview APK
+on:
+  push:
+    branches: [rumi-branding]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: rumi-preview-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Install Android build tools
+        run: sdkmanager 'platforms;android-37' 'build-tools;36.0.0' 'cmake;3.22.1'
+      - name: Run unit tests and build preview
+        run: bash ./gradlew :app:testDevDebugUnitTest :app:assembleDevDebug -Pbitchord.bundleWear=false --stacktrace
+      - name: Upload installable test APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: Rumi-preview-APKs
+          path: app/build/outputs/apk/dev/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Rumi-test-results
+          path: app/build/reports/tests/
+          if-no-files-found: ignore

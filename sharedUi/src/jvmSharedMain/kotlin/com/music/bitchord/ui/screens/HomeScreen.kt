@@ -491,8 +491,17 @@ private fun HomeTitle(
             Text("Rumi", style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onBackground)
         }
-        Text(text = title, style = MaterialTheme.typography.displayLarge,
-            color = MaterialTheme.colorScheme.onBackground)
+        Text(
+            text = title,
+            style = MaterialTheme.typography.displayLarge,
+            color = Color(0xFFF3E9FF),
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "Your music, your mood",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color(0xFFC7A4F5),
+        )
     }
 }
 

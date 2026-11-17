@@ -1434,4 +1434,10 @@
     <string name="bit_perfect_status_inexact">%1$s · tidak persis: sumber ini bukan PCM lossless</string>
     <string name="bit_perfect_status_waiting">Menunggu trek lossless pada output yang didukung</string>
     <string name="bit_perfect_status_unavailable">Tidak tersedia untuk trek ini (%1$s)</string>
+
+    <!-- Missing upstream translations added for Rumi, 2026-11-17. -->
+    <string name="automix_overview">Ringkasan Automix</string>
+    <string name="diwali_title">Rumi mengucapkan Selamat Diwali</string>
+    <string name="diwali_subtitle">Semoga festival cahaya ini memenuhi rumahmu dengan kebahagiaan dan hari-harimu dengan musik.</string>
+    <string name="diwali_cta">Mari rayakan</string>
 </resources>

@@ -1434,4 +1434,10 @@
     <string name="bit_perfect_status_inexact">%1$s · 不精确：此音源不是无损 PCM</string>
     <string name="bit_perfect_status_waiting">正在等待受支持输出上的无损曲目</string>
     <string name="bit_perfect_status_unavailable">此曲目不可用（%1$s）</string>
+
+    <!-- Missing upstream translations added for Rumi, 2026-11-17. -->
+    <string name="automix_overview">Automix 概览</string>
+    <string name="diwali_title">Rumi 祝你排灯节快乐</string>
+    <string name="diwali_subtitle">愿这个灯光节让你的家充满欢乐，让每一天都有音乐相伴。</string>
+    <string name="diwali_cta">一起庆祝</string>
 </resources>

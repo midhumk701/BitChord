@@ -3390,7 +3390,6 @@ fun NowPlayingScreen(
                                     artRequest = art.request,
                                     isPlaying = isPlaying,
                                     modifier = Modifier.fillMaxSize(),
-                                    onLongPress = {},
                                 )
                             } else {
                                 Box(
@@ -3847,7 +3846,7 @@ fun NowPlayingScreen(
                                     showRevertCue -> onOpenMenu
                                     lyricsShareGlyphVisible && lyricPicker.picking -> lyricPicker.cancel
                                     lyricsShareGlyphVisible -> lyricPicker.beginPicking
-                                    else -> { rumiPlayerMenuOpen = true }
+                                    else -> ({ rumiPlayerMenuOpen = true })
                                 },
                                 haptic = if (lyricsShareGlyphVisible && !showRevertCue) {
                                     Haptic.Select

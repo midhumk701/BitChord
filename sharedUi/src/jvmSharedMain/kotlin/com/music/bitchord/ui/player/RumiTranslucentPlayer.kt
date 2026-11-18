@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -75,9 +76,25 @@ internal fun RumiTranslucentPlayer(
     val palette = rememberArtworkPalette(artworkUrl, dark = false, artPx = HEADER_ART_PX)
     val accent = palette.accent
     val reduceMotion by PlayerSettings.reduceAnimation.collectAsStateWithLifecycle()
-    var menu by remember { mutableStateOf(false) }
-    var edit by remember { mutableStateOf(false) }
     BoxWithConstraints(modifier.background(Paper)) {
+        // Album-art atmosphere belongs to Vinyl only; Classic never enters this composable.
+        // A soft white glass wash keeps the text legible over every album palette.
+        AsyncImage(
+            model = artworkUrl.artworkAt(HEADER_ART_PX),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize().graphicsLayer {
+                scaleX = 1.25f
+                scaleY = 1.25f
+            }.blur(72.dp),
+        )
+        Box(Modifier.fillMaxSize().background(
+            Brush.verticalGradient(listOf(
+                Paper.copy(alpha = 0.73f),
+                lerp(Paper, accent, 0.12f).copy(alpha = 0.81f),
+                Paper.copy(alpha = 0.88f),
+            ))
+        ))
         val artworkSize = minOf(maxWidth, maxHeight * 0.62f).coerceAtLeast(220.dp)
         Column(
             Modifier.fillMaxSize().windowInsetsPadding(stableStatusBarInsets())
@@ -91,21 +108,8 @@ internal fun RumiTranslucentPlayer(
                 horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("RUMI MUSIC", color = Ink.copy(alpha = 0.65f),
                     style = MaterialTheme.typography.labelMedium)
-                Box {
-                    TextButton(onClick = { menu = true }) {
-                        Text("•••", color = Ink, style = MaterialTheme.typography.titleMedium)
-                    }
-                    DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                        DropdownMenuItem(text = { Text("Edit Player") },
-                            onClick = { menu = false; edit = true })
-                        DropdownMenuItem(text = { Text("Song options") },
-                            onClick = { menu = false; onSongOptions() })
-                    }
-                    DropdownMenu(expanded = edit, onDismissRequest = { edit = false }) {
-                        DropdownMenuItem(text = { Text("✓ Vinyl") }, onClick = { edit = false })
-                        DropdownMenuItem(text = { Text("Classic") },
-                            onClick = { edit = false; onClassic() })
-                    }
+                TextButton(onClick = onSongOptions) {
+                    Text("•••", color = Ink, style = MaterialTheme.typography.titleMedium)
                 }
             }
             TranslucentRecord(song, artworkUrl, accent, isPlaying && !reduceMotion,

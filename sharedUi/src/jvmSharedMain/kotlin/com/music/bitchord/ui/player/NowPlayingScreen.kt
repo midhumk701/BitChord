@@ -4345,116 +4345,63 @@ private fun RumiVinylArtwork(
     artRequest: Any?,
     isPlaying: Boolean,
     modifier: Modifier = Modifier,
- ) {
-    var rotationEnabled by remember { mutableStateOf(true) }
-    var fortyFiveRpm by remember { mutableStateOf(false) }
+) {
+    val pastel = MaterialTheme.colorScheme.primary.copy(alpha = 0.72f)
     val rotation = remember { Animatable(0f) }
-    LaunchedEffect(isPlaying, rotationEnabled, fortyFiveRpm) {
-        if (isPlaying && rotationEnabled) {
+    LaunchedEffect(isPlaying) {
+        if (isPlaying) {
             while (true) {
                 rotation.animateTo(
                     rotation.value + 360f,
-                    animationSpec = tween(
-                        durationMillis = if (fortyFiveRpm) 13333 else 18182,
-                        easing = LinearEasing,
-                    ),
+                    animationSpec = tween(durationMillis = 18182, easing = LinearEasing),
                 )
             }
         }
     }
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center,
-    ) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        // The sleeve peeks out from behind the translucent record.
+        AsyncImage(
+            model = artRequest,
+            contentDescription = "Album sleeve behind vinyl",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxWidth(0.63f).aspectRatio(1f)
+                .align(Alignment.TopStart).clip(RoundedCornerShape(4.dp)),
+        )
         Box(
-            modifier = Modifier
-                .fillMaxWidth(0.94f)
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(22.dp))
-                .background(
-                    Brush.linearGradient(
-                        listOf(Color(0xFFD1C9D7), Color(0xFF91889D), Color(0xFFB8AFC2)),
-                    ),
-                ),
+            modifier = Modifier.fillMaxWidth(0.92f).aspectRatio(1f)
+                .align(Alignment.BottomStart)
+                .graphicsLayer { rotationZ = rotation.value },
+            contentAlignment = Alignment.Center,
         ) {
-            // Stationary turntable housing and recessed platter.
             Canvas(Modifier.fillMaxSize()) {
-                val side = size.minDimension
-                val center = Offset(side * 0.48f, side * 0.48f)
-                drawCircle(Color(0xFF777081), radius = side * 0.435f, center = center)
-                drawCircle(Color(0xFF26222C), radius = side * 0.415f, center = center)
-                drawCircle(Color(0xFF14121B), radius = side * 0.405f, center = center)
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.81f)
-                    .aspectRatio(1f)
-                    .align(Alignment.CenterStart)
-                    .offset(x = 12.dp, y = (-6).dp)
-                    .graphicsLayer { rotationZ = rotation.value },
-                contentAlignment = Alignment.Center,
-            ) {
-                Canvas(Modifier.fillMaxSize()) {
-                    drawCircle(Color(0xFF101017))
-                    for (i in 1..13) {
-                        drawCircle(
-                            color = Color(0xFF625A69).copy(alpha = if (i % 2 == 0) 0.45f else 0.22f),
-                            radius = size.minDimension * (0.25f + i * 0.018f),
-                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.dp.toPx()),
-                        )
-                    }
-                    drawCircle(Color(0xFFB99BE7), radius = size.minDimension * 0.254f)
+                val radius = size.minDimension / 2f
+                drawCircle(pastel.copy(alpha = 0.34f), radius = radius)
+                for (groove in 1..12) {
+                    drawCircle(
+                        color = pastel.copy(alpha = 0.11f),
+                        radius = radius * (0.52f + groove * 0.038f),
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.dp.toPx()),
+                    )
                 }
-                AsyncImage(
-                    model = artRequest,
-                    contentDescription = "Album artwork on spinning Rumi record",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxWidth(0.49f).aspectRatio(1f).clip(CircleShape),
-                )
-                Box(Modifier.size(9.dp).clip(CircleShape).background(Color(0xFFBDB3C9)))
+                drawCircle(Color.White.copy(alpha = 0.78f), radius = radius * 0.52f)
+                drawCircle(pastel.copy(alpha = 0.22f), radius = radius * 0.52f)
+                drawCircle(Color(0xFFBBC0C5), radius = radius * 0.047f)
+                drawCircle(Color(0xFF111318), radius = radius * 0.029f)
             }
-            // Tonearm is outside the rotating record layer, so it stays fixed.
-            Canvas(Modifier.fillMaxSize()) {
-                val side = size.minDimension
-                val pivot = Offset(side * 0.88f, side * 0.13f)
-                val elbow = Offset(side * 0.83f, side * 0.55f)
-                val stylus = Offset(side * 0.69f, side * 0.78f)
-                drawLine(Color(0xFF4E4655), pivot, elbow, strokeWidth = 11.dp.toPx())
-                drawLine(Color(0xFFE5DDEB), pivot, elbow, strokeWidth = 6.dp.toPx())
-                drawLine(Color(0xFF4E4655), elbow, stylus, strokeWidth = 11.dp.toPx())
-                drawLine(Color(0xFFE5DDEB), elbow, stylus, strokeWidth = 6.dp.toPx())
-                drawCircle(Color(0xFF514B5A), radius = side * 0.057f, center = pivot)
-                drawCircle(Color(0xFFC9C0D1), radius = side * 0.037f, center = pivot)
-                drawCircle(Color(0xFF423B4B), radius = side * 0.026f, center = stylus)
-            }
-            Text(
-                text = "rumi",
-                color = Color(0xFF554C60),
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.align(Alignment.TopStart).padding(12.dp),
-            )
-            Text(
-                text = if (rotationEnabled) "● ON" else "○ OFF",
-                color = Color(0xFF25202B),
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.align(Alignment.BottomStart)
-                    .padding(10.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0x66FFFFFF))
-                    .clickable { rotationEnabled = !rotationEnabled }
-                    .padding(horizontal = 8.dp, vertical = 7.dp),
-            )
-            Text(
-                text = if (fortyFiveRpm) "45 RPM" else "33 RPM",
-                color = Color(0xFF25202B),
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.align(Alignment.BottomEnd)
-                    .padding(10.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0x66FFFFFF))
-                    .clickable { fortyFiveRpm = !fortyFiveRpm }
-                    .padding(horizontal = 8.dp, vertical = 7.dp),
-            )
+        }
+        // Fixed silver tonearm, above and to the right of the record.
+        Canvas(Modifier.fillMaxSize()) {
+            val side = size.minDimension
+            val pivot = Offset(side * 0.78f, side * 0.09f)
+            val elbow = Offset(side * 0.94f, side * 0.38f)
+            val tip = Offset(side * 0.94f, side * 0.66f)
+            drawLine(Color(0xFFAFBBC3), pivot, elbow, strokeWidth = 9.dp.toPx())
+            drawLine(Color(0xFFE6EFF3), pivot, elbow, strokeWidth = 5.dp.toPx())
+            drawLine(Color(0xFFAFBBC3), elbow, tip, strokeWidth = 9.dp.toPx())
+            drawLine(Color(0xFFE6EFF3), elbow, tip, strokeWidth = 5.dp.toPx())
+            drawCircle(Color(0xFFB9C9D0), radius = side * 0.065f, center = pivot)
+            drawCircle(Color(0xFFE8F0F3), radius = side * 0.047f, center = pivot)
+            drawCircle(Color(0xFF9EABB3), radius = side * 0.026f, center = pivot)
         }
     }
 }

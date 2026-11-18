@@ -895,7 +895,7 @@ fun NowPlayingScreen(
     // Media-player convention: the player always owns light status icons. The
     // top treatment below, rather than a window-flag flip per cover, provides
     // their contrast and stays visually stable through artwork transitions.
-    StatusBarIcons(dark = false)
+    // Status icon colour is chosen below after the active panel is known.
     // Composed only while the player is, so closing it brings the bar back.
     // The layout below reads [stableStatusBarInsets] and keeps its place.
     val hideStatusBar by PlayerSettings.hideStatusBar.collectAsStateWithLifecycle()
@@ -1034,6 +1034,7 @@ fun NowPlayingScreen(
     var lyricsOpen by remember {
         mutableStateOf(restoredPlayerScreen == LastPlayerScreen.LYRICS)
     }
+    StatusBarIcons(dark = rumiVinylMode && !lyricsOpen && !queueOpen && !videoMode)
     val queueSlide = remember { mutableFloatStateOf(0f) }
     // Expensive, song-scoped preparation is deliberately staggered. The small
     // backdrop decode runs after the track hand-off has settled; lyrics and
@@ -1974,14 +1975,36 @@ fun NowPlayingScreen(
         // controls. On over a Canvas: the controls only show with its dim and
         // glass deck up, so the glyphs blend into the blurred, darkened clip.
         // And off everywhere with "Disable blend effects".
-        chrome = !disableBlendEffects && !(landscape && videoMode),
+        chrome = !disableBlendEffects && !(landscape && videoMode) &&
+            !(rumiVinylMode && !lyricsOpen && !queueOpen && !videoMode),
         frost = frost,
         live = spotifyCanvasPresentation,
         // Not the host's ⋯ menu: that takes its own still, of everything.
         overlayOpen = { overlayOpen.value && !currentMenuOpen() },
         overlays = playerOverlays,
     ) {
-        if (landscape && videoMode) {
+        if (rumiVinylMode && !videoMode && !lyricsOpen && !queueOpen) {
+            RumiTranslucentPlayer(
+                song = song,
+                artworkUrl = remoteArt,
+                isPlaying = isPlaying,
+                isLoading = isLoading || audioVersionSwitching,
+                previousEnabled = !controlsLocked && (hasPrevious || pastRestartPoint),
+                nextEnabled = !controlsLocked && hasNext,
+                onPrevious = onPrevious,
+                onPlayPause = onPlayPause,
+                onNext = onNext,
+                shown = shown,
+                durationMs = durationMs,
+                onScrub = onScrub,
+                onScrubFinished = onScrubFinished,
+                onClassic = { rumiVinylMode = false },
+                onSongOptions = onOpenMenu,
+                onLyrics = openLyrics,
+                onQueue = toggleQueue,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else if (landscape && videoMode) {
             val versionAligning by PlayerSettings.versionAlignmentInProgress.collectAsStateWithLifecycle()
             val transitionWindow by PlayerSettings.smartTransitionWindow.collectAsStateWithLifecycle()
             Box(modifier = Modifier.fillMaxSize().then(dockHost)) {

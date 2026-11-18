@@ -4211,7 +4211,15 @@ fun NowPlayingScreen(
                     }
 
                     val transport: @Composable () -> Unit = {
-                        TransportRow(
+                        if (rumiVinylMode) VinylTransportRow(
+                            isPlaying = isPlaying,
+                            isLoading = isLoading || audioVersionSwitching,
+                            previousEnabled = !controlsLocked && (hasPrevious || pastRestartPoint),
+                            nextEnabled = !controlsLocked && hasNext,
+                            onPrevious = onPrevious,
+                            onPlayPause = onPlayPause,
+                            onNext = onNext,
+                        ) else TransportRow(
                             isPlaying = isPlaying,
                             isLoading = isLoading || audioVersionSwitching,
                             previousEnabled = !controlsLocked &&

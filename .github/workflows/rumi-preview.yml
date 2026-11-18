@@ -3,6 +3,7 @@ on:
   push:
     branches: [rumi-branding]
   workflow_dispatch:
+  # Rumi preview: build the latest rumi-branding changes after Actions re-enable.
 permissions:
   contents: read
 concurrency:

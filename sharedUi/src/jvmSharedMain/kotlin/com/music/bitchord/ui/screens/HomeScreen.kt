@@ -278,7 +278,9 @@ private fun androidx.compose.foundation.lazy.LazyListScope.itemsIndexedShelves(
     onMoodClick: ((TopPickMood, String) -> Unit)? = null,
     onMoodsShowAll: () -> Unit = {},
 ) {
-    shelves.forEachIndexed { index, shelf ->
+    // Mochyy-style Home: only show shelves with actual music content. Never
+    // render empty carousel cards or headings while a recommendation is missing.
+    shelves.filter { it.items.isNotEmpty() }.forEachIndexed { index, shelf ->
         // Find Your Mood follows the lead shelf, as on Apple Music's Home.
         if (index == 1 && onMoodClick != null) {
             item(key = "find-your-mood") { FindYourMoodShelf(onMoodClick, onMoodsShowAll) }

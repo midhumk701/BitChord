@@ -526,6 +526,60 @@ internal fun TransportRow(
     }
 }
 
+/** Rumi-only pastel transport. Classic TransportRow is deliberately untouched. */
+@Composable
+internal fun VinylTransportRow(
+    isPlaying: Boolean,
+    isLoading: Boolean,
+    previousEnabled: Boolean,
+    nextEnabled: Boolean,
+    onPrevious: () -> Unit,
+    onPlayPause: () -> Unit,
+    onNext: () -> Unit,
+) {
+    val tint = MaterialTheme.colorScheme.primary
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(26.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        @Composable
+        fun VinylButton(icon: DrawableResource, label: String, enabled: Boolean, main: Boolean, onClick: () -> Unit) {
+            Box(
+                modifier = Modifier
+                    .size(if (main) 66.dp else 48.dp)
+                    .clip(CircleShape)
+                    .background(tint.copy(alpha = if (main) 0.94f else 0.38f))
+                    .clickable(enabled = enabled, onClick = onClick),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(icon),
+                    contentDescription = label,
+                    tint = if (main) Color.Black else Color.White,
+                    modifier = Modifier.size(if (main) 30.dp else 23.dp),
+                )
+            }
+        }
+        VinylButton(Res.drawable.ic_player_previous, stringResource(Res.string.widget_previous), previousEnabled, false, onPrevious)
+        if (isLoading) {
+            Box(
+                modifier = Modifier.size(66.dp).clip(CircleShape).background(tint),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(30.dp))
+            }
+        } else {
+            VinylButton(
+                if (isPlaying) Res.drawable.ic_player_pause else Res.drawable.ic_player_play,
+                stringResource(if (isPlaying) Res.string.pause else Res.string.play),
+                true, true, onPlayPause,
+            )
+        }
+        VinylButton(Res.drawable.ic_player_next, stringResource(Res.string.widget_next), nextEnabled, false, onNext)
+    }
+}
+
 /** ThinSlider's fixed touch target at the volume bar's size: 10dp + 22dp. */
 internal val VOLUME_ROW_HEIGHT = 32.dp
 

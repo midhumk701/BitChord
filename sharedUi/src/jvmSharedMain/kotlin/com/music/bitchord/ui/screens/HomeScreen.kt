@@ -203,19 +203,6 @@ fun HomeScreen(
                     )
                 }
             }
-            if (onTopPickClick != null) {
-                when {
-                    !topPicks.isNullOrEmpty() -> item(key = "top-picks") {
-                        RumiFeaturedShelf(
-                            picks = topPicks,
-                            listenerName = listenerName,
-                            onClick = onTopPickClick,
-                            onLongPress = onTopPickLongPress,
-                        )
-                    }
-                    topPicks == null && topPicksLoading -> topPicksSkeleton()
-                }
-            }
             when (state) {
                 is UiState.Loading -> {
                     if (recentlyPlayedLoading) {
@@ -230,16 +217,16 @@ fun HomeScreen(
                     if (recentlyPlayedLoading) {
                         recentlyPlayedSkeleton()
                     }
-                    // Mochyy-inspired discovery spotlight, populated only with real feed items.
-                    val spotlightShelf = state.data.firstOrNull { shelf ->
+                    // Full-bleed hero is driven by actual Home recommendations.
+                    val heroShelf = state.data.firstOrNull { shelf ->
                         shelf.items.any { !it.thumbnailUrl.isNullOrBlank() }
                     }
-                    if (spotlightShelf != null) {
-                        item(key = "rumi-discovery-spotlight") {
-                            RumiDiscoverySpotlight(
-                                shelf = spotlightShelf,
-                                onItemClick = onItemClick,
-                                onItemLongPress = onItemLongPress,
+                    val heroItem = heroShelf?.items?.firstOrNull { !it.thumbnailUrl.isNullOrBlank() }
+                    if (heroShelf != null && heroItem != null) {
+                        item(key = "rumi-home-hero") {
+                            RumiHomeHero(
+                                item = heroItem,
+                                onClick = { onItemClick(heroItem, heroShelf.title) },
                             )
                         }
                     }
@@ -281,71 +268,50 @@ fun HomeScreen(
     }
 }
 
-/**
- * Home-only discovery panel. Uses the live feed instead of decorative placeholders:
- * tapping or long-pressing each cover retains the existing song/album actions.
- */
+/** Mochyy-style artwork hero: always a real item from the loaded Home feed. */
 @Composable
-private fun RumiDiscoverySpotlight(
-    shelf: HomeShelf,
-    onItemClick: (ShelfItem, String) -> Unit,
-    onItemLongPress: ((ShelfItem) -> Unit)?,
-) {
-    val featured = shelf.items.filter { !it.thumbnailUrl.isNullOrBlank() }.take(3)
-    if (featured.isEmpty()) return
-    Column(
-        modifier = Modifier.fillMaxWidth()
-            .padding(horizontal = PAGE_GUTTER, vertical = 12.dp),
+private fun RumiHomeHero(item: ShelfItem, onClick: () -> Unit) {
+    Box(
+        Modifier.fillMaxWidth().height(390.dp)
+            .clickable(onClick = onClick)
+            .background(Color.Black),
     ) {
-        Text(
-            "MADE FOR YOUR MOMENT",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
+        AsyncImage(
+            model = item.thumbnailUrl.artworkAt(CARD_ART_PX),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize(),
         )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            "Discover your next favorite",
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onBackground,
+        Box(
+            Modifier.fillMaxSize().background(
+                androidx.compose.ui.graphics.Brush.verticalGradient(
+                    listOf(Color.Black.copy(alpha = 0.22f), Color.Transparent,
+                        Color.Black.copy(alpha = 0.92f)),
+                ),
+            ),
         )
-        Spacer(Modifier.height(16.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            featured.forEachIndexed { index, item ->
-                Column(
-                    modifier = Modifier.weight(if (index == 0) 1.35f else 1f)
-                        .longPressMenuClickable(
-                            onClick = { onItemClick(item, shelf.title) },
-                            onLongClick = onItemLongPress?.let { callback -> { callback(item) } },
-                        ),
-                ) {
-                    Box(
-                        Modifier.fillMaxWidth().aspectRatio(if (index == 0) 0.82f else 1f)
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                    ) {
-                        AsyncImage(
-                            model = item.thumbnailUrl.artworkAt(CARD_ART_PX),
-                            contentDescription = item.title,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        item.title,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Text(
-                        item.subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+        Column(
+            Modifier.align(Alignment.BottomStart)
+                .padding(horizontal = 28.dp, vertical = 30.dp),
+        ) {
+            Text("CONTINUE LISTENING", color = Color.White.copy(alpha = 0.8f),
+                style = MaterialTheme.typography.labelLarge)
+            Spacer(Modifier.height(8.dp))
+            Text(item.title, color = Color.White,
+                style = MaterialTheme.typography.headlineLarge,
+                maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(item.subtitle, color = Color.White.copy(alpha = 0.8f),
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Spacer(Modifier.height(18.dp))
+            Box(
+                Modifier.clip(RoundedCornerShape(28.dp))
+                    .background(Color.White)
+                    .clickable(onClick = onClick)
+                    .padding(horizontal = 28.dp, vertical = 12.dp),
+            ) {
+                Text("▶  Play", color = Color.Black,
+                    style = MaterialTheme.typography.titleMedium)
             }
         }
     }

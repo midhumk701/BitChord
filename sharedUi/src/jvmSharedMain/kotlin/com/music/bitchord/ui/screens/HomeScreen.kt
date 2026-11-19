@@ -177,7 +177,7 @@ fun HomeScreen(
     ) {
         LazyColumn(
             state = listState,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().background(Color.Black),
             // The heading sits higher than the other tabs' first row: pull the
             // whole feed up by [HOME_TITLE_LIFT] with it.
             contentPadding = if (title != null) {
@@ -338,9 +338,11 @@ private fun androidx.compose.foundation.lazy.LazyListScope.itemsIndexedShelves(
             val openItem: (ShelfItem) -> Unit = { item -> onItemClick(item, shelf.title) }
             // Listen again and Quick picks are lists on the web player, as
             // Recents is here: one pager for all three.
-            if (shelf.layout == ShelfLayout.LIST ||
-                (index == 0 && shelf.title.equals(RECENTS_TITLE, ignoreCase = true))
-            ) {
+            if (shelf.title.equals(RECENTS_TITLE, ignoreCase = true) ||
+                shelf.title.contains("recently played", ignoreCase = true) ||
+                shelf.title.contains("listen again", ignoreCase = true)) {
+                RumiRecentlyPlayed(shelf, openItem, onItemLongPress)
+            } else if (shelf.layout == ShelfLayout.LIST) {
                 RecentShelf(
                     shelf = shelf,
                     onItemClick = openItem,
@@ -356,6 +358,38 @@ private fun androidx.compose.foundation.lazy.LazyListScope.itemsIndexedShelves(
                     currentSong = currentSong,
                     isPlaying = isPlaying,
                 )
+            }
+        }
+    }
+}
+
+/** Home-only large artwork carousel for genuine recently listened items. */
+@Composable
+private fun RumiRecentlyPlayed(
+    shelf: HomeShelf,
+    onItemClick: (ShelfItem) -> Unit,
+    onItemLongPress: ((ShelfItem) -> Unit)?,
+) {
+    Column(Modifier.fillMaxWidth().background(Color.Black).padding(bottom = 24.dp)) {
+        Text("Recently Played", style = MaterialTheme.typography.headlineSmall,
+            color = Color.White, modifier = Modifier.padding(start = 22.dp, top = 18.dp, bottom = 14.dp))
+        ShelfRow(contentPadding = PaddingValues(horizontal = 22.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            items(shelf.items) { item ->
+                Column(Modifier.width(152.dp).longPressMenuClickable(
+                    onClick = { onItemClick(item) },
+                    onLongClick = onItemLongPress?.let { { it(item) } },
+                )) {
+                    AsyncImage(model = item.thumbnailUrl.artworkAt(CARD_ART_PX),
+                        contentDescription = item.title, contentScale = ContentScale.Crop,
+                        modifier = Modifier.size(152.dp).clip(RoundedCornerShape(14.dp))
+                            .background(Color.DarkGray))
+                    Spacer(Modifier.height(8.dp))
+                    Text(item.title, color = Color.White, style = MaterialTheme.typography.titleSmall,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(item.subtitle, color = Color.LightGray, style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
             }
         }
     }
@@ -519,38 +553,16 @@ private fun HomeTitle(
     festiveLogo: Boolean = false,
     onFestiveLogoClick: (() -> Unit)? = null,
 ) {
-    // Rumi branding, modified 2026-11-17. Keep the existing feed and its actions.
-    Column(
-        modifier = modifier
-            .padding(horizontal = PAGE_GUTTER, vertical = 8.dp)
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.padding(bottom = 14.dp),
-        ) {
-            Icon(
-                painter = painterResource(Res.drawable.rumi_cat),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(32.dp),
-            )
-            Text("Rumi Music", style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onBackground)
-        }
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = "Your music, your mood",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFFC7A4F5),
-        )
+    Row(modifier = modifier.fillMaxWidth().background(Color.Black)
+            .padding(horizontal = 22.dp, vertical = 18.dp),
+        verticalAlignment = Alignment.CenterVertically) {
+        Icon(painter = painterResource(Res.drawable.rumi_cat),
+            contentDescription = null, tint = Color.White, modifier = Modifier.size(34.dp))
+        Spacer(Modifier.width(12.dp))
+        Text("Rumi", style = MaterialTheme.typography.titleLarge, color = Color.White)
+        Spacer(Modifier.weight(1f))
+        Text("HOME", style = MaterialTheme.typography.labelSmall,
+            color = Color.White.copy(alpha = 0.7f))
     }
 }
 

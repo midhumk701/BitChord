@@ -122,7 +122,7 @@ object TopPicks {
         // a static playlist; freshStation shuffles the result on every tap.
         val gachaSeed = rest.firstOrNull { it.kind == TopPickKind.PERSONAL_STATION }
             ?: rest.firstOrNull { it.kind == TopPickKind.DISCOVERY_STATION }
-        val gacha = gachaSeed?.copy(title = "🎲 Gacha here! Random plays", subtitle = "A surprise mix for you")
+        val gacha = gachaSeed?.copy(kind = TopPickKind.GACHA, title = "Gacha here! Random plays", subtitle = "A surprise mix for you")
         listOfNotNull(lead) + rest + listOfNotNull(gacha)
     }
 
@@ -147,7 +147,7 @@ object TopPicks {
     suspend fun queue(pick: TopPick): Result<List<Song>> {
         if (pick.kind == TopPickKind.MOOD) return moodQueue(pick)
         val target = pick.watch ?: return Result.failure(IllegalStateException("no queue behind ${pick.kind}"))
-        if (pick.kind == TopPickKind.PERSONAL_STATION || pick.kind == TopPickKind.DISCOVERY_STATION) {
+        if (pick.kind == TopPickKind.PERSONAL_STATION || pick.kind == TopPickKind.DISCOVERY_STATION || pick.kind == TopPickKind.GACHA) {
             return freshStation(pick, target)
         }
         return YtMusicRepository.watchQueue(target)

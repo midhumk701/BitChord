@@ -236,10 +236,18 @@ fun HomeScreen(
                         }
                     }
                     itemsIndexedShelves(
-                        shelves = if (artworkPicks.isEmpty() || onTopPickClick == null) {
-                            val heroItems = rumiHeroSelections(state.data).map { it.second }.toSet()
-                            state.data.map { shelf -> shelf.copy(items = shelf.items.filterNot { it in heroItems }) }
-                        } else state.data,
+                        shelves = run {
+                            val personalized = artworkPicks.isNotEmpty() && onTopPickClick != null
+                            val heroSongs = if (personalized) emptyList() else rumiHeroSelections(state.data).map { it.second }
+                            val titles = (if (personalized) artworkPicks.map { it.title } else heroSongs.map { it.title })
+                                .map { it.trim().lowercase(Locale.ROOT) }.toSet()
+                            val images = (if (personalized) artworkPicks.flatMap { it.images } else heroSongs.mapNotNull { it.thumbnailUrl })
+                                .map { it.substringBefore("?").substringBefore("=w") }.toSet()
+                            state.data.map { shelf -> shelf.copy(items = shelf.items.filterNot { item ->
+                                item.title.trim().lowercase(Locale.ROOT) !in titles &&
+                                    item.thumbnailUrl?.substringBefore("?")?.substringBefore("=w") !in images
+                            }) }
+                        },
                         onMoodClick = onMoodClick,
                         onMoodsShowAll = onMoodsShowAll,
                         onItemClick = onItemClick,
@@ -368,7 +376,12 @@ private fun RumiDiscoveryHero(
         if (cards.size > 1) while (true) {
             delay(3_000L)
             if (!state.isScrollInProgress) {
-                state.animateScrollToItem((state.firstVisibleItemIndex + 1) % cards.size)
+                val next = (state.firstVisibleItemIndex + 1) % cards.size
+                if (next == 0) state.scrollToItem(0)
+                else state.animateScrollBy(
+                    (state.layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 0).toFloat() + 12f,
+                    animationSpec = tween(durationMillis = 1_300),
+                )
             }
         }
     }

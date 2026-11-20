@@ -1730,6 +1730,40 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     homeShelfRequestSettled(identity, generation)
                 }
             }
+            // Rumi-curated discovery: real YouTube Music search results, not
+            // relabelled regional trending shelves. These requests run alongside
+            // the normal feed so a slow search never blocks Home.
+            listOf(
+                "K-pop for you" to "K-pop latest hits 2026",
+                "English hits" to "English pop hits 2026",
+                "South Indian favorites" to "Malayalam Tamil Telugu hits 2026",
+            ).forEach { (heading, query) ->
+                launch {
+                    YtMusicRepository.search(query, SearchFilter.SONGS).onSuccess { results ->
+                        if (!isCurrentHomeLoad(identity, generation)) return@onSuccess
+                        val items = results.mapNotNull { result ->
+                            val track = when (result) {
+                                is SearchResult.TopTrack -> result.song
+                                is SearchResult.Track -> result.song
+                                else -> null
+                            }
+                            track?.takeIf { it.videoId.isNotBlank() }?.let {
+                                ShelfItem(
+                                    title = it.title,
+                                    subtitle = it.artist,
+                                    thumbnailUrl = it.thumbnailUrl,
+                                    videoId = it.videoId,
+                                    browseId = null,
+                                )
+                            }
+                        }.distinctBy { it.videoId }.take(12)
+                        if (items.isNotEmpty()) publishHomeShelves(
+                            listOf(HomeShelf(title = heading, items = items)),
+                            prepend = true,
+                        )
+                    }
+                }
+            }
             if (_signedIn.value) {
                 launch {
                     YtMusicRepository.homeRecentlyPlayed()

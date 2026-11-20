@@ -118,6 +118,7 @@ fun SongActionsMenu(
     onToggleLike: () -> Unit,
     onToggleDislike: () -> Unit,
     onAddToPlaylist: () -> Unit,
+    onEditPlayer: (() -> Unit)? = null,
     onOpenAlbum: (String) -> Unit,
     onOpenArtist: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -288,14 +289,22 @@ fun SongActionsMenu(
         // player's own pair: a heart that files the track under this device's
         // Liked playlist, and the device's playlists. [likeStatus] is that
         // playlist's answer there, not YouTube's, and neither needs an account.
-        if (canRate) {
-            if (startsGroup()) IosMenuSeparator()
-            ActionRow(
-                icon = SfIcons.AddToPlaylist,
+        if (startsGroup()) IosMenuSeparator()
+        ActionRow(
+            icon = SfIcons.AddToPlaylist,
                 label = stringResource(R.string.add_to_playlist),
                 accent = palette.accent,
                 onClick = onAddToPlaylist,
+        )
+        onEditPlayer?.let { edit ->
+            ActionRow(
+                icon = SfIcons.MusicNote,
+                label = "Edit Player",
+                accent = palette.accent,
+                onClick = edit,
             )
+        }
+        if (canRate) {
             onRemoveFromPlaylist?.let {
                 ActionRow(
                     icon = SfIcons.RemoveFromPlaylist,

@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import com.music.bitchord.ui.components.ShelfRow
@@ -221,13 +222,26 @@ fun HomeScreen(
                     val heroShelf = state.data.firstOrNull { shelf ->
                         shelf.items.any { !it.thumbnailUrl.isNullOrBlank() }
                     }
-                    val heroItem = heroShelf?.items?.firstOrNull { !it.thumbnailUrl.isNullOrBlank() }
-                    if (heroShelf != null && heroItem != null) {
+                    val heroItems = heroShelf?.items
+                        ?.filter { !it.thumbnailUrl.isNullOrBlank() }
+                        ?.take(8).orEmpty()
+                    if (heroShelf != null && heroItems.isNotEmpty()) {
                         item(key = "rumi-home-hero") {
-                            RumiHomeHero(
-                                item = heroItem,
-                                onClick = { onItemClick(heroItem, heroShelf.title) },
-                            )
+                            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                                val cardWidth = maxWidth - 48.dp
+                                LazyRow(
+                                    contentPadding = PaddingValues(horizontal = 16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                ) {
+                                    items(heroItems) { hero ->
+                                        RumiHomeHero(
+                                            item = hero,
+                                            onClick = { onItemClick(hero, heroShelf.title) },
+                                            modifier = Modifier.width(cardWidth),
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                     itemsIndexedShelves(
@@ -270,9 +284,10 @@ fun HomeScreen(
 
 /** Mochyy-style artwork hero: always a real item from the loaded Home feed. */
 @Composable
-private fun RumiHomeHero(item: ShelfItem, onClick: () -> Unit) {
+private fun RumiHomeHero(item: ShelfItem, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Box(
-        Modifier.fillMaxWidth().height(390.dp)
+        modifier.height(390.dp)
+            .clip(RoundedCornerShape(26.dp))
             .clickable(onClick = onClick)
             .background(Color.Black),
     ) {

@@ -117,7 +117,13 @@ object TopPicks {
             artists.getOrNull(2)?.let { andSimilar(it, photos) }?.let(::add)
             discoveryStation(mixes, artists, history)?.let(::add)
         }.shuffled()
-        listOfNotNull(lead) + rest
+        // Keep a one-tap random station in the same personalized hero carousel.
+        // Reuse the listener's personalized station queue rather than inventing
+        // a static playlist; freshStation shuffles the result on every tap.
+        val gachaSeed = rest.firstOrNull { it.kind == TopPickKind.PERSONAL_STATION }
+            ?: rest.firstOrNull { it.kind == TopPickKind.DISCOVERY_STATION }
+        val gacha = gachaSeed?.copy(title = "🎲 Gacha here! Random plays", subtitle = "A surprise mix for you")
+        listOfNotNull(lead) + rest + listOfNotNull(gacha)
     }
 
     /**

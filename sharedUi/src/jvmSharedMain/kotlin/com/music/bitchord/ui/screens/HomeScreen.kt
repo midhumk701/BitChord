@@ -218,31 +218,19 @@ fun HomeScreen(
                     if (recentlyPlayedLoading) {
                         recentlyPlayedSkeleton()
                     }
-                    // Full-bleed hero is driven by actual Home recommendations.
-                    val heroShelf = state.data.firstOrNull { shelf ->
-                        shelf.items.any { !it.thumbnailUrl.isNullOrBlank() }
-                    }
-                    val heroItems = heroShelf?.items
-                        ?.filter { !it.thumbnailUrl.isNullOrBlank() }
-                        ?.take(8).orEmpty()
-                    if (heroShelf != null && heroItems.isNotEmpty()) {
-                        item(key = "rumi-home-hero") {
-                            BoxWithConstraints(Modifier.fillMaxWidth()) {
-                                val cardWidth = maxWidth - 48.dp
-                                LazyRow(
-                                    contentPadding = PaddingValues(horizontal = 16.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                ) {
-                                    items(heroItems) { hero ->
-                                        RumiHomeHero(
-                                            item = hero,
-                                            onClick = { onItemClick(hero, heroShelf.title) },
-                                            modifier = Modifier.width(cardWidth),
-                                        )
-                                    }
-                                }
-                            }
+                    // Use the personalized Top Picks engine rather than promoting the
+                    // first Home shelf (often Recently Played) into the hero.
+                    if (!topPicks.isNullOrEmpty() && onTopPickClick != null) {
+                        item(key = "rumi-personalized-hero") {
+                            TopPicksShelf(
+                                picks = topPicks,
+                                listenerName = listenerName,
+                                onClick = onTopPickClick,
+                                onLongPress = onTopPickLongPress,
+                            )
                         }
+                    } else if (topPicksLoading) {
+                        topPicksSkeleton()
                     }
                     itemsIndexedShelves(
                         shelves = state.data,
@@ -344,7 +332,15 @@ private fun androidx.compose.foundation.lazy.LazyListScope.itemsIndexedShelves(
 ) {
     // Mochyy-style Home: only show shelves with actual music content. Never
     // render empty carousel cards or headings while a recommendation is missing.
+    // Multiple upstream shelves can describe the same listening history.
+    // Keep only the first Recently Played / Listen Again shelf on Home.
+    var shownRecents = false
     shelves.filter { it.items.isNotEmpty() }.forEachIndexed { index, shelf ->
+        val isRecents = shelf.title.equals(RECENTS_TITLE, ignoreCase = true) ||
+            shelf.title.contains("recently played", ignoreCase = true) ||
+            shelf.title.contains("listen again", ignoreCase = true)
+        if (isRecents && shownRecents) return@forEachIndexed
+        if (isRecents) shownRecents = true
         item(key = shelf.title + index) {
             val openItem: (ShelfItem) -> Unit = { item -> onItemClick(item, shelf.title) }
             // Listen again and Quick picks are lists on the web player, as

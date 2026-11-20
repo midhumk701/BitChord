@@ -450,7 +450,7 @@ object AppSettings {
     val stopOnTaskRemoved = MutableStateFlow(true)
 
     /** Hides the volume slider on the main player, leaving the rest of the layout to reflow. */
-    val vinylPlayer = MutableStateFlow(true)
+    val playerStyle = MutableStateFlow(com.music.bitchord.ui.player.PlayerStyle.Vinyl)
     val hideVolumeBar = MutableStateFlow(false)
 
     /** Hides the device status bar (clock, battery, notifications) while the main player is open. */
@@ -1028,7 +1028,8 @@ object AppSettings {
             prefs.getInt(KEY_PERFORMANCE_REFRESH_RATE, DEFAULT_PERFORMANCE_REFRESH_RATE),
         )
         stopOnTaskRemoved.value = prefs.getBoolean(KEY_STOP_ON_TASK_REMOVED, true)
-        vinylPlayer.value = prefs.getBoolean(KEY_VINYL_PLAYER, true)
+        playerStyle.value = com.music.bitchord.ui.player.PlayerStyle.entries.firstOrNull { it.name == prefs.getString("player_style", null) }
+            ?: if (prefs.getBoolean(KEY_VINYL_PLAYER, true)) com.music.bitchord.ui.player.PlayerStyle.Vinyl else com.music.bitchord.ui.player.PlayerStyle.Classic
         hideVolumeBar.value = prefs.getBoolean(KEY_HIDE_VOLUME_BAR, false)
         hideStatusBarInPlayer.value = prefs.getBoolean(KEY_HIDE_STATUS_BAR_IN_PLAYER, false)
         hideSongStatus.value = prefs.getBoolean(KEY_HIDE_SONG_STATUS, false)
@@ -1436,9 +1437,9 @@ object AppSettings {
         prefs.edit().putBoolean(KEY_STOP_ON_TASK_REMOVED, value).apply()
     }
 
-    fun setVinylPlayer(value: Boolean) {
-        vinylPlayer.value = value
-        prefs.edit().putBoolean(KEY_VINYL_PLAYER, value).apply()
+    fun setPlayerStyle(value: com.music.bitchord.ui.player.PlayerStyle) {
+        playerStyle.value = value
+        prefs.edit().putString("player_style", value.name).apply()
     }
 
     fun setHideVolumeBar(value: Boolean) {

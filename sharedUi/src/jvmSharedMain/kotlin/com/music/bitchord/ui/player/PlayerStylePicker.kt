@@ -27,19 +27,26 @@ import org.jetbrains.compose.resources.painterResource
 fun PlayerStylePicker(
     song: Song?, playing: Boolean, position: PlaybackPosition, durationMs: Long,
     contentPadding: PaddingValues, onSet: () -> Unit,
+    lyrics: List<com.music.bitchord.data.lyrics.LyricLine> = emptyList(),
 ) {
-    val vinyl by PlayerSettings.vinylPlayer.collectAsStateWithLifecycle()
+    val selected by PlayerSettings.playerStyle.collectAsStateWithLifecycle()
     val reduceMotion by PlayerSettings.reduceAnimation.collectAsStateWithLifecycle()
-    val pager = rememberPagerState(initialPage = if (vinyl) 0 else 1) { 2 }
+    val pager = rememberPagerState(initialPage = selected.ordinal) { PlayerStyle.entries.size }
     val art = rememberRemoteArtworkUrl(song)
     val previewSong = song ?: remember { Song("", "No song playing", "", null) }
     Column(Modifier.fillMaxSize().padding(contentPadding),
         horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(if (pager.currentPage == 0) "Vinyl" else "Classic",
+        Text(PlayerStyle.entries[pager.currentPage].label,
             style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.height(8.dp))
         HorizontalPager(state = pager, contentPadding = PaddingValues(horizontal = 38.dp),
             pageSpacing = 12.dp, modifier = Modifier.fillMaxWidth().weight(1f)) { page ->
+            if (PlayerStyle.entries[page] == PlayerStyle.Lyric) {
+                Box(Modifier.fillMaxSize().clip(RoundedCornerShape(24.dp))) {
+                    ArcLyricPlayer(previewSong, art, lyrics, position, durationMs, playing)
+                }
+                return@HorizontalPager
+            }
             val record = page == 0
             val palette = rememberArtworkPalette(art, dark = !record)
             val ink = if (record) Color(0xFF534D56) else Color.White
@@ -73,14 +80,14 @@ fun PlayerStylePicker(
             }
         }
         Row(Modifier.padding(vertical = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            repeat(2) { index ->
+            repeat(PlayerStyle.entries.size) { index ->
                 Box(Modifier.size(7.dp).background(
                     MaterialTheme.colorScheme.onSurface.copy(alpha = if (pager.currentPage == index) 1f else 0.3f),
                     CircleShape))
             }
         }
         Button(onClick = {
-            PlayerSettings.setVinylPlayer(pager.settledPage == 0)
+            PlayerSettings.setPlayerStyle(PlayerStyle.entries[pager.settledPage])
             onSet()
         }, enabled = !pager.isScrollInProgress) { Text("Set") }
     }

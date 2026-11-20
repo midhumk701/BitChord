@@ -234,6 +234,8 @@ object PlayerPlatform {
 }
 
 /** The settings the player reads, named and typed as the phone's AppSettings has them. */
+enum class PlayerStyle(val label: String) { Vinyl("Vinyl"), Classic("Classic"), Lyric("Lyric") }
+
 interface PlayerSettingsSource {
     val animatedCanvas: StateFlow<Boolean>
     val audioQualityCellular: StateFlow<AudioQuality>
@@ -242,8 +244,8 @@ interface PlayerSettingsSource {
     val fullBleedArtwork: StateFlow<Boolean>
     val hideSongStatus: StateFlow<Boolean>
     val showQueueHistory: StateFlow<Boolean>
-    val vinylPlayer: StateFlow<Boolean>
-    fun setVinylPlayer(value: Boolean)
+    val playerStyle: StateFlow<PlayerStyle>
+    fun setPlayerStyle(value: PlayerStyle)
     val hideVolumeBar: StateFlow<Boolean>
     /** Hide the device status bar while the player is up. Always false where there is none. */
     val hideStatusBar: StateFlow<Boolean>

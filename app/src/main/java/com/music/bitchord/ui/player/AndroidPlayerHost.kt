@@ -67,8 +67,8 @@ class AndroidPlayerHost(context: Context) : PlayerHost {
         override val fullBleedArtwork get() = AppSettings.fullBleedArtwork
         override val hideSongStatus get() = AppSettings.hideSongStatus
         override val showQueueHistory get() = AppSettings.showQueueHistory
-        override val vinylPlayer get() = AppSettings.vinylPlayer
-        override fun setVinylPlayer(value: Boolean) = AppSettings.setVinylPlayer(value)
+        override val playerStyle get() = AppSettings.playerStyle
+        override fun setPlayerStyle(value: PlayerStyle) = AppSettings.setPlayerStyle(value)
         override val hideVolumeBar get() = AppSettings.hideVolumeBar
         override val hideStatusBar get() = AppSettings.hideStatusBarInPlayer
         override val lastPlayerScreen get() = AppSettings.lastPlayerScreen

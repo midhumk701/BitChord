@@ -873,12 +873,14 @@ fun NowPlayingScreen(
      * rather than a still of it.
      */
     onLiveCanvasChanged: (Boolean) -> Unit = {},
+    onCollapsePlayer: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
     val haptics = rememberHaptics()
     // Both player styles remain accessible through the three-dot menu.
-    val rumiVinylMode by PlayerSettings.vinylPlayer.collectAsStateWithLifecycle()
+    val style by PlayerSettings.playerStyle.collectAsStateWithLifecycle()
+    val rumiVinylMode = style == PlayerStyle.Vinyl
     var rumiPlayerMenuOpen by remember { mutableStateOf(false) }
     var rumiEditPlayerOpen by remember { mutableStateOf(false) }
 
@@ -1983,7 +1985,14 @@ fun NowPlayingScreen(
         overlayOpen = { overlayOpen.value && !currentMenuOpen() },
         overlays = playerOverlays,
     ) {
-        if (rumiVinylMode && !videoMode && !lyricsOpen && !queueOpen) {
+        if (style == PlayerStyle.Lyric && !videoMode && !lyricsOpen && !queueOpen) {
+            ArcLyricPlayer(song, remoteArt, lyrics.orEmpty(), position, durationMs, isPlaying,
+                liked = likeStatus == LikeStatus.LIKE, onLike = onToggleLike,
+                onPrevious = onPrevious.takeIf { !controlsLocked && (hasPrevious || pastRestartPoint) },
+                onToggle = onPlayPause.takeUnless { controlsLocked },
+                onNext = onNext.takeIf { !controlsLocked && hasNext },
+                onSeek = onSeekFraction.takeUnless { controlsLocked }, onCollapse = onCollapsePlayer)
+        } else if (rumiVinylMode && !videoMode && !lyricsOpen && !queueOpen) {
             RumiTranslucentPlayer(
                 song = song,
                 artworkUrl = remoteArt,
@@ -1998,7 +2007,7 @@ fun NowPlayingScreen(
                 durationMs = durationMs,
                 onScrub = onScrub,
                 onScrubFinished = onScrubFinished,
-                onClassic = { PlayerSettings.setVinylPlayer(false) },
+                onClassic = { PlayerSettings.setPlayerStyle(PlayerStyle.Classic) },
                 onSongOptions = onOpenMenu,
                 onLyrics = openLyrics,
                 onQueue = toggleQueue,
@@ -3905,14 +3914,14 @@ fun NowPlayingScreen(
                                 DropdownMenuItem(
                                     text = { Text(if (rumiVinylMode) "✓ Vinyl" else "Vinyl") },
                                     onClick = {
-                                        PlayerSettings.setVinylPlayer(true)
+                                        PlayerSettings.setPlayerStyle(PlayerStyle.Vinyl)
                                         rumiEditPlayerOpen = false
                                     },
                                 )
                                 DropdownMenuItem(
                                     text = { Text(if (!rumiVinylMode) "✓ Classic" else "Classic") },
                                     onClick = {
-                                        PlayerSettings.setVinylPlayer(false)
+                                        PlayerSettings.setPlayerStyle(PlayerStyle.Classic)
                                         rumiEditPlayerOpen = false
                                     },
                                 )

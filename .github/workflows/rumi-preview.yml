@@ -1,9 +1,9 @@
 name: Rumi preview APK
 on:
   push:
-    branches: [rumi-branding]
+    branches: [main, rumi-branding]
   workflow_dispatch:
-  # Rumi preview: build the latest rumi-branding changes after Actions re-enable.
+  # Build the installable Rumi dev APK from main and the backup branch.
 permissions:
   contents: read
 concurrency:

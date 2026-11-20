@@ -223,9 +223,14 @@ fun HomeScreen(
                     }
                     // Keep the original immersive hero layout, but power it with
                     // personalized recommendations instead of duplicating a feed shelf.
-                    if (!topPicks.isNullOrEmpty() && onTopPickClick != null) {
-                        item(key = "rumi-personalized-hero") {
-                            RumiDiscoveryHero(topPicks, onTopPickClick)
+                    item(key = "rumi-personalized-hero") {
+                        val artworkPicks = topPicks.orEmpty().filter {
+                            it.kind != TopPickKind.MOOD && it.images.any(String::isNotBlank)
+                        }
+                        if (artworkPicks.isNotEmpty() && onTopPickClick != null) {
+                            RumiDiscoveryHero(topPicks.orEmpty(), onTopPickClick)
+                        } else {
+                            RumiFeedHero(state.data, onItemClick)
                         }
                     }
                     itemsIndexedShelves(
@@ -261,6 +266,69 @@ fun HomeScreen(
                 (layout.visibleItemsInfo.lastOrNull()?.index ?: -1) to layout.totalItemsCount
             }.collect { (lastVisible, total) ->
                 if (!loadingMore && total > 0 && lastVisible >= total - 3) loadMore()
+            }
+        }
+    }
+}
+
+/** Signed-out and empty-Top-Picks fallback: real Home artwork, never a blank hero. */
+@Composable
+private fun RumiFeedHero(
+    shelves: List<HomeShelf>,
+    onClick: (ShelfItem, String) -> Unit,
+) {
+    val options = shelves.asSequence()
+        .filterNot { shelf -> shelf.title.contains("recent", ignoreCase = true) ||
+            shelf.title.contains("listen again", ignoreCase = true) }
+        .flatMap { shelf -> shelf.items.asSequence().map { shelf.title to it } }
+        .filter { (_, item) -> item.thumbnailUrl.isNotBlank() }
+        .distinctBy { (_, item) -> item.thumbnailUrl }
+        .take(8).toList()
+    if (options.isEmpty()) return
+    val state = rememberLazyListState()
+    LaunchedEffect(options) {
+        if (options.size > 1) while (true) {
+            delay(5_000L)
+            if (!state.isScrollInProgress) {
+                state.animateScrollToItem((state.firstVisibleItemIndex + 1) % options.size)
+            }
+        }
+    }
+    BoxWithConstraints(Modifier.fillMaxWidth().padding(bottom = 18.dp)) {
+        val cardWidth = maxWidth - 48.dp
+        LazyRow(state = state, contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(options) { (shelfTitle, item) ->
+                Box(Modifier.width(cardWidth).height(390.dp)
+                    .clip(RoundedCornerShape(26.dp)).background(Color(0xFF282036))
+                    .clickable { onClick(item, shelfTitle) }) {
+                    AsyncImage(model = item.thumbnailUrl.artworkAt(CARD_ART_PX),
+                        contentDescription = null, contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize())
+                    Box(Modifier.fillMaxSize().background(
+                        androidx.compose.ui.graphics.Brush.verticalGradient(
+                            listOf(Color.Black.copy(alpha = 0.1f), Color.Transparent,
+                                Color.Black.copy(alpha = 0.9f)))))
+                    Column(Modifier.align(Alignment.BottomStart)
+                        .padding(horizontal = 28.dp, vertical = 30.dp)) {
+                        Text("DISCOVER MUSIC", color = Color.White.copy(alpha = 0.82f),
+                            style = MaterialTheme.typography.labelLarge)
+                        Spacer(Modifier.height(8.dp))
+                        Text(item.title, color = Color.White,
+                            style = MaterialTheme.typography.headlineLarge,
+                            maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        Text(item.subtitle, color = Color.White.copy(alpha = 0.8f),
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        Spacer(Modifier.height(18.dp))
+                        Box(Modifier.clip(RoundedCornerShape(28.dp)).background(Color.White)
+                            .clickable { onClick(item, shelfTitle) }
+                            .padding(horizontal = 28.dp, vertical = 12.dp)) {
+                            Text("▶  Play", color = Color.Black,
+                                style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
+                }
             }
         }
     }

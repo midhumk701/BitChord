@@ -275,6 +275,7 @@ private fun cardText(pick: TopPick, listenerName: String?): CardText {
             title = pick.title,
             subtitle = pick.subtitle,
         )
+        TopPickKind.GACHA -> CardText(eyebrow = "🎲 SURPRISE ME", title = "Gacha here! Random plays", subtitle = "A fresh mix for you")
         TopPickKind.DISCOVERY_STATION -> CardText(
             eyebrow = stringResource(Res.string.top_pick_made_for_you),
             title = stringResource(Res.string.top_pick_discovery_station),
@@ -309,6 +310,11 @@ private fun TopPickCard(
             TopPickKind.PERSONAL_STATION -> {
                 PersonalStationArt(Modifier.fillMaxSize())
                 eyebrowColor = Color(0xFFFFD2DA)
+                branded = true
+            }
+            TopPickKind.GACHA -> {
+                DiscoveryStationArt(Modifier.fillMaxSize())
+                eyebrowColor = Color(0xFFCDBDFF)
                 branded = true
             }
             TopPickKind.DISCOVERY_STATION -> {

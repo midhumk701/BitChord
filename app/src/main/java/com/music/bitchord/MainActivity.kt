@@ -2546,6 +2546,7 @@ private fun BitChordApp(
             // the parameter.
             menuOpen = { songActions != null && menuFromPlayer && songMenuOrigin == null },
             onLiveCanvasChanged = { playerLiveCanvas = it },
+            onCollapsePlayer = dismissPlayer,
             isPlaying = player.isPlaying,
             isLoading = playPauseBusy,
             position = player.position,
@@ -3112,6 +3113,7 @@ private fun BitChordApp(
                             pageRoute.category == com.music.bitchord.ui.screens.SettingsCategory.EDIT_PLAYER
                         ) {
                             com.music.bitchord.ui.player.PlayerStylePicker(
+                                lyrics = lyrics.orEmpty(),
                                 song = playerSong,
                                 playing = player.isPlaying,
                                 position = player.position,

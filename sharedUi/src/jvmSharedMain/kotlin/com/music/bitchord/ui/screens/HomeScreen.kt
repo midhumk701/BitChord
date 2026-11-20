@@ -28,6 +28,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -230,11 +232,14 @@ fun HomeScreen(
                         if (artworkPicks.isNotEmpty() && onTopPickClick != null) {
                             RumiDiscoveryHero(topPicks.orEmpty(), onTopPickClick)
                         } else {
-                            RumiFeedHero(state.data, onItemClick)
+                            RumiFeedHero(rumiHeroSelections(state.data), onItemClick)
                         }
                     }
                     itemsIndexedShelves(
-                        shelves = state.data,
+                        shelves = if (artworkPicks.isEmpty() || onTopPickClick == null) {
+                            val heroItems = rumiHeroSelections(state.data).map { it.second }.toSet()
+                            state.data.map { shelf -> shelf.copy(items = shelf.items.filterNot { it in heroItems }) }
+                        } else state.data,
                         onMoodClick = onMoodClick,
                         onMoodsShowAll = onMoodsShowAll,
                         onItemClick = onItemClick,
@@ -271,26 +276,39 @@ fun HomeScreen(
     }
 }
 
-/** Signed-out and empty-Top-Picks fallback: real Home artwork, never a blank hero. */
+/** Reserve distinct deep-feed songs for the hero, removing them from shelves below. */
+private fun rumiHeroSelections(shelves: List<HomeShelf>): List<Pair<String, ShelfItem>> {
+    val candidates = shelves.asSequence()
+        .filterNot { it.title.contains("recent", ignoreCase = true) ||
+            it.title.contains("listen again", ignoreCase = true) }
+        .flatMap { shelf -> shelf.items.drop(3).asSequence().map { shelf.title to it } }
+        .filter { (_, item) -> !item.thumbnailUrl.isNullOrBlank() }
+        .distinctBy { (_, item) -> item.videoId ?: item.thumbnailUrl }
+        .take(8).toList()
+    return candidates.ifEmpty {
+        shelves.asSequence().flatMap { shelf -> shelf.items.asSequence().map { shelf.title to it } }
+            .filter { (_, item) -> !item.thumbnailUrl.isNullOrBlank() }
+            .distinctBy { (_, item) -> item.videoId ?: item.thumbnailUrl }.take(8).toList()
+    }
+}
+
+/** Signed-out artwork hero with its own selections, not repeated below. */
 @Composable
 private fun RumiFeedHero(
-    shelves: List<HomeShelf>,
+    options: List<Pair<String, ShelfItem>>,
     onClick: (ShelfItem, String) -> Unit,
 ) {
-    val options = shelves.asSequence()
-        .filterNot { shelf -> shelf.title.contains("recent", ignoreCase = true) ||
-            shelf.title.contains("listen again", ignoreCase = true) }
-        .flatMap { shelf -> shelf.items.asSequence().map { shelf.title to it } }
-        .filter { (_, item) -> !item.thumbnailUrl.isNullOrBlank() }
-        .distinctBy { (_, item) -> item.thumbnailUrl }
-        .take(8).toList()
     if (options.isEmpty()) return
     val state = rememberLazyListState()
     LaunchedEffect(options) {
         if (options.size > 1) while (true) {
-            delay(5_000L)
+            delay(3_000L)
             if (!state.isScrollInProgress) {
-                state.animateScrollToItem((state.firstVisibleItemIndex + 1) % options.size)
+                if (state.firstVisibleItemIndex >= options.lastIndex) state.scrollToItem(0)
+                else state.animateScrollBy(
+                    (state.layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 0).toFloat() + 12f,
+                    animationSpec = tween(durationMillis = 1_300),
+                )
             }
         }
     }
@@ -348,7 +366,7 @@ private fun RumiDiscoveryHero(
     val state = rememberLazyListState()
     LaunchedEffect(state, cards) {
         if (cards.size > 1) while (true) {
-            delay(5_000L)
+            delay(3_000L)
             if (!state.isScrollInProgress) {
                 state.animateScrollToItem((state.firstVisibleItemIndex + 1) % cards.size)
             }

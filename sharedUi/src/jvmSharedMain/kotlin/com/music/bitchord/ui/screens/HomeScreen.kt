@@ -281,7 +281,7 @@ private fun RumiFeedHero(
         .filterNot { shelf -> shelf.title.contains("recent", ignoreCase = true) ||
             shelf.title.contains("listen again", ignoreCase = true) }
         .flatMap { shelf -> shelf.items.asSequence().map { shelf.title to it } }
-        .filter { (_, item) -> item.thumbnailUrl.isNotBlank() }
+        .filter { (_, item) -> !item.thumbnailUrl.isNullOrBlank() }
         .distinctBy { (_, item) -> item.thumbnailUrl }
         .take(8).toList()
     if (options.isEmpty()) return

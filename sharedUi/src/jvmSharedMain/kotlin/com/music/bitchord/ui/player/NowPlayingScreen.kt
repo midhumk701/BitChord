@@ -878,7 +878,7 @@ fun NowPlayingScreen(
     val density = LocalDensity.current
     val haptics = rememberHaptics()
     // Both player styles remain accessible through the three-dot menu.
-    var rumiVinylMode by remember { mutableStateOf(true) }
+    val rumiVinylMode by PlayerSettings.vinylPlayer.collectAsStateWithLifecycle()
     var rumiPlayerMenuOpen by remember { mutableStateOf(false) }
     var rumiEditPlayerOpen by remember { mutableStateOf(false) }
 
@@ -1998,7 +1998,7 @@ fun NowPlayingScreen(
                 durationMs = durationMs,
                 onScrub = onScrub,
                 onScrubFinished = onScrubFinished,
-                onClassic = { rumiVinylMode = false },
+                onClassic = { PlayerSettings.setVinylPlayer(false) },
                 onSongOptions = onOpenMenu,
                 onLyrics = openLyrics,
                 onQueue = toggleQueue,
@@ -3905,14 +3905,14 @@ fun NowPlayingScreen(
                                 DropdownMenuItem(
                                     text = { Text(if (rumiVinylMode) "✓ Vinyl" else "Vinyl") },
                                     onClick = {
-                                        rumiVinylMode = true
+                                        PlayerSettings.setVinylPlayer(true)
                                         rumiEditPlayerOpen = false
                                     },
                                 )
                                 DropdownMenuItem(
                                     text = { Text(if (!rumiVinylMode) "✓ Classic" else "Classic") },
                                     onClick = {
-                                        rumiVinylMode = false
+                                        PlayerSettings.setVinylPlayer(false)
                                         rumiEditPlayerOpen = false
                                     },
                                 )

@@ -189,7 +189,7 @@ private fun RumiSeekBar(shown: () -> Float, durationMs: Long, accent: Color,
 
 /** All geometry scales together; the album sleeve and tonearm remain stationary. */
 @Composable
-private fun TranslucentRecord(song: Song, artworkUrl: String?, accent: Color,
+internal fun TranslucentRecord(song: Song, artworkUrl: String?, accent: Color,
     spinning: Boolean, modifier: Modifier) {
     val rotation = remember { Animatable(0f) }
     val measurer = rememberTextMeasurer()

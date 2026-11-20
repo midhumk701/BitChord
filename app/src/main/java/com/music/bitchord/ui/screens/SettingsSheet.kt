@@ -2818,6 +2818,7 @@ internal fun SegmentedControl(
  * they stay on the main page, where they always were.
  */
 enum class SettingsCategory(@param:StringRes val title: Int) {
+    EDIT_PLAYER(R.string.edit_player),
     DOWNLOADS(R.string.downloads),
     PLAYBACK(R.string.playback),
     CONTENT_PREFERENCES(R.string.content_preferences),
@@ -2832,6 +2833,7 @@ enum class SettingsCategory(@param:StringRes val title: Int) {
 
     val icon: ImageVector
         get() = when (this) {
+            EDIT_PLAYER -> SfIcons.PlayCircle
             DOWNLOADS -> SfIcons.Download
             PLAYBACK -> SfIcons.PlayCircle
             CONTENT_PREFERENCES -> SfIcons.Video

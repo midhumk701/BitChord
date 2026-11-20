@@ -3108,6 +3108,17 @@ private fun BitChordApp(
                                 onConfirmBitPerfect = { confirmBitPerfect = it },
                                 contentPadding = listPadding,
                             )
+                        } else if (pageRoute is AppRoute.SettingsSection &&
+                            pageRoute.category == com.music.bitchord.ui.screens.SettingsCategory.EDIT_PLAYER
+                        ) {
+                            com.music.bitchord.ui.player.PlayerStylePicker(
+                                song = playerSong,
+                                playing = player.isPlaying,
+                                position = player.position,
+                                durationMs = player.durationMs,
+                                contentPadding = listPadding,
+                                onSet = { navigator.pop() },
+                            )
                         } else if (pageRoute == AppRoute.Settings || pageRoute is AppRoute.SettingsSection) {
                             // The main page and every category's page are the
                             // one screen, each showing its own share of the rows.

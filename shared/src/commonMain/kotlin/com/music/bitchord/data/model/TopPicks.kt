@@ -41,6 +41,9 @@ enum class TopPickKind {
 
     /** Music the listener hasn't played yet — YouTube's Discover Mix. */
     DISCOVERY_STATION,
+
+    /** A fresh surprise station seeded by the listener's taste. */
+    GACHA,
 }
 
 /**

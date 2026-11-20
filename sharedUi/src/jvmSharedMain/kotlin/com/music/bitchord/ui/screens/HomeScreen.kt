@@ -229,8 +229,6 @@ fun HomeScreen(
                                 onLongPress = onTopPickLongPress,
                             )
                         }
-                    } else if (topPicksLoading) {
-                        topPicksSkeleton()
                     }
                     itemsIndexedShelves(
                         shelves = state.data,

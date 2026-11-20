@@ -1999,6 +1999,7 @@ fun NowPlayingScreen(
                 onScrub = onScrub,
                 onScrubFinished = onScrubFinished,
                 onClassic = { rumiVinylMode = false },
+                onVinyl = { rumiVinylMode = true },
                 onSongOptions = onOpenMenu,
                 onLyrics = openLyrics,
                 onQueue = toggleQueue,

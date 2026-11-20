@@ -31,6 +31,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.music.bitchord.data.model.TopPickKind
+import kotlinx.coroutines.delay
 import com.music.bitchord.ui.components.ShelfRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -218,16 +221,11 @@ fun HomeScreen(
                     if (recentlyPlayedLoading) {
                         recentlyPlayedSkeleton()
                     }
-                    // Use the personalized Top Picks engine rather than promoting the
-                    // first Home shelf (often Recently Played) into the hero.
+                    // Keep the original immersive hero layout, but power it with
+                    // personalized recommendations instead of duplicating a feed shelf.
                     if (!topPicks.isNullOrEmpty() && onTopPickClick != null) {
                         item(key = "rumi-personalized-hero") {
-                            TopPicksShelf(
-                                picks = topPicks,
-                                listenerName = listenerName,
-                                onClick = onTopPickClick,
-                                onLongPress = onTopPickLongPress,
-                            )
+                            RumiDiscoveryHero(topPicks, onTopPickClick)
                         }
                     }
                     itemsIndexedShelves(
@@ -263,6 +261,79 @@ fun HomeScreen(
                 (layout.visibleItemsInfo.lastOrNull()?.index ?: -1) to layout.totalItemsCount
             }.collect { (lastVisible, total) ->
                 if (!loadingMore && total > 0 && lastVisible >= total - 3) loadMore()
+            }
+        }
+    }
+}
+
+/** Immersive, artwork-backed recommendations; moods stay out of the hero. */
+@Composable
+private fun RumiDiscoveryHero(
+    picks: List<TopPick>,
+    onClick: (TopPick, String) -> Unit,
+) {
+    val pictured = picks.filter { it.kind != TopPickKind.MOOD && it.images.firstOrNull()?.isNotBlank() == true }
+    val gacha = picks.firstOrNull { it.kind == TopPickKind.GACHA }
+    val cards = (pictured.filter { it.kind != TopPickKind.GACHA }.take(7) + listOfNotNull(gacha))
+        .distinctBy { it.kind to it.title }
+    if (cards.isEmpty()) return
+    val state = rememberLazyListState()
+    LaunchedEffect(state, cards) {
+        if (cards.size > 1) while (true) {
+            delay(5_000L)
+            if (!state.isScrollInProgress) {
+                state.animateScrollToItem((state.firstVisibleItemIndex + 1) % cards.size)
+            }
+        }
+    }
+    BoxWithConstraints(Modifier.fillMaxWidth().padding(bottom = 18.dp)) {
+        val cardWidth = maxWidth - 48.dp
+        LazyRow(
+            state = state,
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            items(cards) { pick ->
+                val isGacha = pick.kind == TopPickKind.GACHA
+                val artwork = pick.images.firstOrNull()?.takeIf { it.isNotBlank() }
+                    ?: pictured.firstOrNull()?.images?.firstOrNull()
+                Box(
+                    Modifier.width(cardWidth).height(390.dp)
+                        .clip(RoundedCornerShape(26.dp))
+                        .background(Color(0xFF282036))
+                        .clickable { onClick(pick, if (isGacha) "Gacha here! Random plays" else pick.title) },
+                ) {
+                    if (artwork != null) AsyncImage(
+                        model = artwork.artworkAt(CARD_ART_PX),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                    Box(Modifier.fillMaxSize().background(
+                        androidx.compose.ui.graphics.Brush.verticalGradient(
+                            listOf(Color.Black.copy(alpha = 0.12f), Color.Transparent, Color.Black.copy(alpha = 0.9f)),
+                        ),
+                    ))
+                    Column(Modifier.align(Alignment.BottomStart).padding(horizontal = 28.dp, vertical = 30.dp)) {
+                        Text(if (isGacha) "🎲 SURPRISE ME" else "DISCOVER FOR YOU",
+                            color = Color.White.copy(alpha = 0.82f), style = MaterialTheme.typography.labelLarge)
+                        Spacer(Modifier.height(8.dp))
+                        Text(if (isGacha) "Gacha here! Random plays" else pick.title.ifBlank {
+                            pick.artistName ?: "Made for you"
+                        }, color = Color.White, style = MaterialTheme.typography.headlineLarge,
+                            maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        Text(if (isGacha) "A surprise mix for you" else pick.subtitle.ifBlank { pick.artistName.orEmpty() },
+                            color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        Spacer(Modifier.height(18.dp))
+                        Box(Modifier.clip(RoundedCornerShape(28.dp)).background(Color.White)
+                            .clickable { onClick(pick, if (isGacha) "Gacha here! Random plays" else pick.title) }
+                            .padding(horizontal = 28.dp, vertical = 12.dp)) {
+                            Text(if (isGacha) "🎲 Shuffle" else "▶  Play", color = Color.Black,
+                                style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
+                }
             }
         }
     }

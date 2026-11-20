@@ -225,11 +225,11 @@ fun HomeScreen(
                     }
                     // Keep the original immersive hero layout, but power it with
                     // personalized recommendations instead of duplicating a feed shelf.
-                    item(key = "rumi-personalized-hero") {
-                        val artworkPicks = topPicks.orEmpty().filter {
+                    val artworkPicks = topPicks.orEmpty().filter {
                             it.kind != TopPickKind.MOOD && it.images.any(String::isNotBlank)
                         }
-                        if (artworkPicks.isNotEmpty() && onTopPickClick != null) {
+                    item(key = "rumi-personalized-hero") {
+                         if (artworkPicks.isNotEmpty() && onTopPickClick != null) {
                             RumiDiscoveryHero(topPicks.orEmpty(), onTopPickClick)
                         } else {
                             RumiFeedHero(rumiHeroSelections(state.data), onItemClick)

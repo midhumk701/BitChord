@@ -67,6 +67,7 @@ internal fun RumiTranslucentPlayer(
     onScrub: (Float) -> Unit,
     onScrubFinished: () -> Unit,
     onClassic: () -> Unit,
+    onVinyl: () -> Unit,
     onSongOptions: () -> Unit,
     onLyrics: () -> Unit,
     onQueue: () -> Unit,
@@ -76,6 +77,8 @@ internal fun RumiTranslucentPlayer(
     val palette = rememberArtworkPalette(artworkUrl, dark = false, artPx = HEADER_ART_PX)
     val accent = palette.accent
     val reduceMotion by PlayerSettings.reduceAnimation.collectAsStateWithLifecycle()
+    var optionsExpanded by remember { mutableStateOf(false) }
+    var editExpanded by remember { mutableStateOf(false) }
     BoxWithConstraints(modifier.background(Paper)) {
         // Album-art atmosphere belongs to Vinyl only; Classic never enters this composable.
         // A soft white glass wash keeps the text legible over every album palette.
@@ -108,8 +111,30 @@ internal fun RumiTranslucentPlayer(
                 horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("RUMI MUSIC", color = Ink.copy(alpha = 0.65f),
                     style = MaterialTheme.typography.labelMedium)
-                TextButton(onClick = onSongOptions) {
-                    Text("•••", color = Ink, style = MaterialTheme.typography.titleMedium)
+                Box {
+                    TextButton(onClick = { optionsExpanded = true }) {
+                        Text("•••", color = Ink, style = MaterialTheme.typography.titleMedium)
+                    }
+                    DropdownMenu(expanded = optionsExpanded,
+                        onDismissRequest = { optionsExpanded = false }) {
+                        DropdownMenuItem(text = { Text("Song options (including playlists)") },
+                            onClick = {
+                                optionsExpanded = false
+                                onSongOptions()
+                            })
+                        DropdownMenuItem(text = { Text("Edit Player") },
+                            onClick = {
+                                optionsExpanded = false
+                                editExpanded = true
+                            })
+                    }
+                    DropdownMenu(expanded = editExpanded,
+                        onDismissRequest = { editExpanded = false }) {
+                        DropdownMenuItem(text = { Text("✓ Vinyl") },
+                            onClick = { editExpanded = false; onVinyl() })
+                        DropdownMenuItem(text = { Text("Classic") },
+                            onClick = { editExpanded = false; onClassic() })
+                    }
                 }
             }
             TranslucentRecord(song, artworkUrl, accent, isPlaying && !reduceMotion,

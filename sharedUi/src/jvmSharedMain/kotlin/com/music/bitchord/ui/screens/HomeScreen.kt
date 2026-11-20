@@ -330,10 +330,6 @@ private fun androidx.compose.foundation.lazy.LazyListScope.itemsIndexedShelves(
     // Mochyy-style Home: only show shelves with actual music content. Never
     // render empty carousel cards or headings while a recommendation is missing.
     shelves.filter { it.items.isNotEmpty() }.forEachIndexed { index, shelf ->
-        // Find Your Mood follows the lead shelf, as on Apple Music's Home.
-        if (index == 1 && onMoodClick != null) {
-            item(key = "find-your-mood") { FindYourMoodShelf(onMoodClick, onMoodsShowAll) }
-        }
         item(key = shelf.title + index) {
             val openItem: (ShelfItem) -> Unit = { item -> onItemClick(item, shelf.title) }
             // Listen again and Quick picks are lists on the web player, as
@@ -342,6 +338,10 @@ private fun androidx.compose.foundation.lazy.LazyListScope.itemsIndexedShelves(
                 shelf.title.contains("recently played", ignoreCase = true) ||
                 shelf.title.contains("listen again", ignoreCase = true)) {
                 RumiRecentlyPlayed(shelf, openItem, onItemLongPress)
+            } else if (shelf.title.contains("history", ignoreCase = true) ||
+                shelf.title.contains("most played", ignoreCase = true) ||
+                shelf.title.contains("frequently played", ignoreCase = true)) {
+                RumiHistoryOrRanking(shelf, openItem, onItemLongPress)
             } else if (shelf.layout == ShelfLayout.LIST) {
                 RecentShelf(
                     shelf = shelf,
@@ -352,12 +352,50 @@ private fun androidx.compose.foundation.lazy.LazyListScope.itemsIndexedShelves(
                 )
             } else {
                 Shelf(
-                    shelf = shelf,
+                    shelf = shelf.copy(title = when {
+                        shelf.title.startsWith("Similar to ", ignoreCase = true) ->
+                            "More like " + shelf.title.substring(11)
+                        shelf.title.contains("jump back in", ignoreCase = true) ->
+                            "Jump Back In"
+                        else -> shelf.title
+                    }),
                     onItemClick = openItem,
                     onItemLongPress = onItemLongPress,
                     currentSong = currentSong,
                     isPlaying = isPlaying,
                 )
+            }
+        }
+    }
+}
+
+/** Only display ranked songs when the server labels the shelf as frequently played. */
+@Composable
+private fun RumiHistoryOrRanking(
+    shelf: HomeShelf,
+    onItemClick: (ShelfItem) -> Unit,
+    onItemLongPress: ((ShelfItem) -> Unit)?,
+) {
+    val ranked = shelf.title.contains("played", ignoreCase = true)
+    Column(Modifier.fillMaxWidth().background(Color.Black)
+        .padding(horizontal = 22.dp, vertical = 14.dp)) {
+        Text(if (ranked) "Most Played" else "History",
+            style = MaterialTheme.typography.headlineSmall, color = Color.White,
+            modifier = Modifier.padding(bottom = 12.dp))
+        shelf.items.take(10).forEachIndexed { index, item ->
+            Row(verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()) {
+                if (ranked) {
+                    Text("${index + 1}", color = Color.LightGray,
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.width(32.dp))
+                }
+                Box(Modifier.weight(1f)) {
+                    CompactTrackRow(title = item.title, subtitle = item.subtitle,
+                        thumbnailUrl = item.thumbnailUrl,
+                        onClick = { onItemClick(item) },
+                        onLongPress = onItemLongPress?.let { { it(item) } })
+                }
             }
         }
     }

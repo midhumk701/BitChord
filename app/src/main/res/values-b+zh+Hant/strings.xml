@@ -1440,4 +1440,5 @@
     <string name="diwali_title">Rumi 祝你排燈節快樂</string>
     <string name="diwali_subtitle">願這個燈光節讓你的家充滿歡樂，讓每一天都有音樂相伴。</string>
     <string name="diwali_cta">一起慶祝</string>
+    <string name="edit_player">編輯播放器</string>
 </resources>

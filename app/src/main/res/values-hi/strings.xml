@@ -1463,4 +1463,5 @@
 
     <!-- Missing upstream translations added for Rumi, 2026-11-17. -->
     <string name="automix_overview">ऑटोमिक्स का अवलोकन</string>
+    <string name="edit_player">प्लेयर संपादित करें</string>
 </resources>

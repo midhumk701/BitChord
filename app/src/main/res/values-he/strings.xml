@@ -1468,4 +1468,5 @@
     <string name="diwali_title">Rumi מאחלת לך דיוואלי שמח</string>
     <string name="diwali_subtitle">מי ייתן וחג האורות ימלא את ביתך בשמחה ואת ימיך במוזיקה.</string>
     <string name="diwali_cta">בואו נחגוג</string>
+    <string name="edit_player">עריכת הנגן</string>
 </resources>

@@ -1464,4 +1464,5 @@
     <string name="diwali_title">Rumi vous souhaite un joyeux Diwali</string>
     <string name="diwali_subtitle">Que cette fête des lumières remplisse votre foyer de joie et vos journées de musique.</string>
     <string name="diwali_cta">Célébrons ensemble</string>
+    <string name="edit_player">Modifier le lecteur</string>
 </resources>

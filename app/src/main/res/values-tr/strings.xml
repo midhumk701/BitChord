@@ -1420,4 +1420,5 @@
     <string name="diwali_title">Rumi mutlu bir Diwali diler</string>
     <string name="diwali_subtitle">Bu ışık festivali evinizi neşeyle, günlerinizi müzikle doldursun.</string>
     <string name="diwali_cta">Birlikte kutlayalım</string>
+    <string name="edit_player">Oynatıcıyı düzenle</string>
 </resources>

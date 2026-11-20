@@ -1440,4 +1440,5 @@
     <string name="diwali_title">Rumi mengucapkan Selamat Diwali</string>
     <string name="diwali_subtitle">Semoga festival cahaya ini memenuhi rumahmu dengan kebahagiaan dan hari-harimu dengan musik.</string>
     <string name="diwali_cta">Mari rayakan</string>
+    <string name="edit_player">Edit pemutar</string>
 </resources>

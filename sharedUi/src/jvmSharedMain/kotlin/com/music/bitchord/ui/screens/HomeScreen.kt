@@ -245,8 +245,7 @@ fun HomeScreen(
                                 .map { it.substringBefore("?").substringBefore("=w") }.toSet()
                             state.data.map { shelf -> shelf.copy(items = shelf.items.filterNot { item ->
                                 item.title.trim().lowercase(Locale.ROOT) in titles ||
-                                    (item.thumbnailUrl != null &&
-                                        item.thumbnailUrl.substringBefore("?").substringBefore("=w") in images)
+                                    (item.thumbnailUrl?.substringBefore("?")?.substringBefore("=w") in images)
                             }) }
                         },
                         onMoodClick = onMoodClick,

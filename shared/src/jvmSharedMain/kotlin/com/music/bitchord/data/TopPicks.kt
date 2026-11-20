@@ -122,6 +122,7 @@ object TopPicks {
         // a static playlist; freshStation shuffles the result on every tap.
         val gachaSeed = rest.firstOrNull { it.kind == TopPickKind.PERSONAL_STATION }
             ?: rest.firstOrNull { it.kind == TopPickKind.DISCOVERY_STATION }
+            ?: rest.firstOrNull { it.watch != null }
         val gacha = gachaSeed?.copy(kind = TopPickKind.GACHA, title = "Gacha here! Random plays", subtitle = "A surprise mix for you")
         listOfNotNull(lead) + rest + listOfNotNull(gacha)
     }

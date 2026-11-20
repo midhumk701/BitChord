@@ -2,6 +2,10 @@ package com.music.bitchord.ui.player
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.MoreHoriz
+import com.music.bitchord.ui.components.menuAnchor
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -49,7 +53,7 @@ internal fun ArcLyricPlayer(
     durationMs: Long, playing: Boolean, liked: Boolean = false,
     onLike: (() -> Unit)? = null, onPrevious: (() -> Unit)? = null,
     onToggle: (() -> Unit)? = null, onNext: (() -> Unit)? = null,
-    onSeek: ((Float) -> Unit)? = null, onCollapse: (() -> Unit)? = null,
+    onSeek: ((Float) -> Unit)? = null, onCollapse: (() -> Unit)? = null, onMore: (() -> Unit)? = null,
 ) {
     val palette = rememberArtworkPalette(artwork, dark = true)
     val clock = rememberLyricClock(song.videoId, rememberLyricPlayhead(position), playing)
@@ -76,12 +80,6 @@ internal fun ArcLyricPlayer(
             AsyncImage(artwork, null, Modifier.fillMaxWidth().fillMaxHeight(0.54f),
                 contentScale = ContentScale.Crop)
         }
-        Box(Modifier.align(Alignment.TopCenter).padding(top = h * 0.05f)
-            .size(64.dp, 3.dp).background(white.copy(alpha = 0.65f), RoundedCornerShape(2.dp)))
-        if (onCollapse != null) IconButton(onClick = onCollapse,
-            modifier = Modifier.align(Alignment.TopEnd).padding(top = h * 0.055f, end = 12.dp)
-                .semantics { contentDescription = "Collapse player" }) { Text("⌄", color = white) }
-
         val seekAction by rememberUpdatedState(onSeek)
         Canvas(Modifier.fillMaxSize().pointerInput(onSeek != null, durationMs) {
             if (onSeek == null || durationMs <= 0) return@pointerInput
@@ -115,6 +113,17 @@ internal fun ArcLyricPlayer(
             drawTrack(0.86f, white.copy(alpha = 0.4f))
             val fraction = if (durationMs > 0) position.positionMs.toFloat() / durationMs else 0f
             drawTrack(0.18f + 0.68f * fraction.coerceIn(0f, 1f), white)
+        }
+        Box(Modifier.align(Alignment.TopCenter).padding(top = h * 0.025f)
+            .size(76.dp, 48.dp), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(64.dp, 3.dp).background(white.copy(alpha = 0.65f), RoundedCornerShape(2.dp)))
+            if (onCollapse != null) IconButton(onClick = onCollapse,
+                modifier = Modifier.fillMaxSize().semantics { contentDescription = "Collapse player" }) {}
+        }
+        if (onMore != null) IconButton(onClick = onMore,
+            modifier = Modifier.align(Alignment.TopEnd).padding(top = h * 0.055f, end = 12.dp)
+                .menuAnchor().background(Color.Black.copy(alpha = 0.25f), RoundedCornerShape(50))) {
+            Icon(Icons.Rounded.MoreHoriz, stringResource(Res.string.more), tint = white)
         }
         Text(timestamp(position.positionMs), Modifier.offset(w * 0.055f, h * seekHeight(0.18f) - 8.dp),
             color = white, fontSize = 11.sp)

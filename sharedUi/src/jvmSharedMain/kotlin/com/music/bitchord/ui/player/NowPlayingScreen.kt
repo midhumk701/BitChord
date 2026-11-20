@@ -72,8 +72,6 @@ import androidx.compose.material.icons.rounded.FastRewind
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.IosShare
 import androidx.compose.material.icons.rounded.MoreHoriz
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -878,11 +876,8 @@ fun NowPlayingScreen(
 ) {
     val density = LocalDensity.current
     val haptics = rememberHaptics()
-    // Both player styles remain accessible through the three-dot menu.
     val style by PlayerSettings.playerStyle.collectAsStateWithLifecycle()
     val rumiVinylMode = style == PlayerStyle.Vinyl
-    var rumiPlayerMenuOpen by remember { mutableStateOf(false) }
-    var rumiEditPlayerOpen by remember { mutableStateOf(false) }
 
     // Remote tracks whose art lives inside the file resolve it here, once —
     // every surface below reads the same value rather than each triggering
@@ -1991,7 +1986,7 @@ fun NowPlayingScreen(
                 onPrevious = onPrevious.takeIf { !controlsLocked && (hasPrevious || pastRestartPoint) },
                 onToggle = onPlayPause.takeUnless { controlsLocked },
                 onNext = onNext.takeIf { !controlsLocked && hasNext },
-                onSeek = onSeekFraction.takeUnless { controlsLocked }, onCollapse = onCollapsePlayer)
+                onSeek = onSeekFraction.takeUnless { controlsLocked }, onCollapse = onCollapsePlayer, onMore = onOpenMenu)
         } else if (rumiVinylMode && !videoMode && !lyricsOpen && !queueOpen) {
             RumiTranslucentPlayer(
                 song = song,
@@ -3859,7 +3854,6 @@ fun NowPlayingScreen(
                             // whichever way the controls are.
                             val lyricsShareGlyphVisible = lyricsOpen && collapseDone && lyricsShareEnabled &&
                                 !lyrics.isNullOrEmpty() && (!lyricsControlsOpen || lyricPicker.picking)
-                            Box {
                             CircleGlyph(
                                 icon = when {
                                     showRevertCue -> Icons.AutoMirrored.Rounded.Undo
@@ -3879,7 +3873,7 @@ fun NowPlayingScreen(
                                     showRevertCue -> onOpenMenu
                                     lyricsShareGlyphVisible && lyricPicker.picking -> lyricPicker.cancel
                                     lyricsShareGlyphVisible -> lyricPicker.beginPicking
-                                    else -> ({ rumiPlayerMenuOpen = true })
+                                    else -> onOpenMenu
                                 },
                                 haptic = if (lyricsShareGlyphVisible && !showRevertCue) {
                                     Haptic.Select
@@ -3888,45 +3882,6 @@ fun NowPlayingScreen(
                                 },
                                 modifier = Modifier.menuAnchor(),
                             )
-                            DropdownMenu(
-                                expanded = rumiPlayerMenuOpen,
-                                onDismissRequest = { rumiPlayerMenuOpen = false },
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text("Edit Player") },
-                                    onClick = {
-                                        rumiPlayerMenuOpen = false
-                                        rumiEditPlayerOpen = true
-                                    },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("More options") },
-                                    onClick = {
-                                        rumiPlayerMenuOpen = false
-                                        onOpenMenu()
-                                    },
-                                )
-                            }
-                            DropdownMenu(
-                                expanded = rumiEditPlayerOpen,
-                                onDismissRequest = { rumiEditPlayerOpen = false },
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text(if (rumiVinylMode) "✓ Vinyl" else "Vinyl") },
-                                    onClick = {
-                                        PlayerSettings.setPlayerStyle(PlayerStyle.Vinyl)
-                                        rumiEditPlayerOpen = false
-                                    },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(if (!rumiVinylMode) "✓ Classic" else "Classic") },
-                                    onClick = {
-                                        PlayerSettings.setPlayerStyle(PlayerStyle.Classic)
-                                        rumiEditPlayerOpen = false
-                                    },
-                                )
-                            }
-                            }
                         }
 
                         // [lyricsOpen] asked first: a close has already hidden the

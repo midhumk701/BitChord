@@ -162,6 +162,19 @@ internal fun TopPicksShelf(
         snapshotFlow { rowState.isScrollInProgress to clipOwner(rowState.layoutInfo, hasClip) }
             .collect { (scrolling, next) -> if (!scrolling) owner = next }
     }
+    // Advance the discovery cards automatically while preserving manual swipes.
+    // Restart when recommendations change; never compete with an active gesture.
+    LaunchedEffect(rowState, picks) {
+        if (picks.size > 1) {
+            while (true) {
+                delay(5_000L)
+                if (!rowState.isScrollInProgress) {
+                    val next = (rowState.firstVisibleItemIndex + 1) % picks.size
+                    rowState.animateScrollToItem(next)
+                }
+            }
+        }
+    }
     Column(Modifier.padding(bottom = 26.dp)) {
         SectionHeader(stringResource(Res.string.top_picks_for_you))
         BoxWithConstraints {
